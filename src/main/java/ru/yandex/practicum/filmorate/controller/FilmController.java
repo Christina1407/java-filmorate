@@ -13,9 +13,11 @@ import java.util.List;
 @Slf4j
 public class FilmController {
     FilmRepository filmRepository;
+
     public FilmController(FilmRepository filmRepository) {
         this.filmRepository = filmRepository;
     }
+
     @GetMapping()
     public List<Film> findAll() {
         return filmRepository.findAll();
@@ -23,13 +25,15 @@ public class FilmController {
 
     @PostMapping()
     public Film create(@Valid @RequestBody Film film) {
-        log.info("Добавление нового фильма: {}", film);
-        return filmRepository.save(film);
+        Film savedFilm = filmRepository.save(film);
+        log.info("Фильм сохранён: {}", savedFilm);
+        return savedFilm;
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        log.info("Обновление фильма: {}", film);
-        return filmRepository.update(film);
+        Film updateFilm = filmRepository.update(film);
+        log.info("Фильм обновлён: {}", updateFilm);
+        return updateFilm;
     }
 }

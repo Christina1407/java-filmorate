@@ -8,8 +8,8 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = RealiseDateValidator.class)
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RealiseDateContraint {
-    String message() default "Film realise must be after 1895";
+public @interface RealiseDateConstraints {
+    String message() default "RealiseDate is after 28.12.1895";
 
     Class<?>[] groups() default {};
 

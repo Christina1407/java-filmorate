@@ -16,24 +16,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class UserTest {
     // Инициализация Validator
     private static final Validator validator;
+
     static {
         try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
             validator = validatorFactory.usingContext().getValidator();
         }
     }
+
     @Test
     void shouldBeValidated() {
         User user = new User("test", "", LocalDate.of(1994, 1, 1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(2, violations.size());
-        assertTrue(violations.stream().anyMatch(elem -> elem.getMessage().equals("должно иметь формат адреса электронной почты")));
-        assertTrue(violations.stream().anyMatch(elem -> elem.getMessage().equals("не должно быть пустым")));
+        assertEquals(3, violations.size());
+        assertTrue(violations.stream().anyMatch(elem -> elem.getMessage().equals("email is not well-formed email address")));
+        assertTrue(violations.stream().anyMatch(elem -> elem.getMessage().equals("login is empty")));
+        assertTrue(violations.stream().anyMatch(elem -> elem.getMessage().equals("login with whitespaces")));
 
         User user2 = new User("test@test.com", null, LocalDate.of(2999, 1, 1));
         Set<ConstraintViolation<User>> violations2 = validator.validate(user2);
         assertEquals(2, violations2.size());
-        assertTrue(violations2.stream().anyMatch(elem -> elem.getMessage().equals("должно содержать прошедшую дату")));
-        assertTrue(violations2.stream().anyMatch(elem -> elem.getMessage().equals("не должно быть пустым")));
+        assertTrue(violations2.stream().anyMatch(elem -> elem.getMessage().equals("birthday is not in past")));
+        assertTrue(violations2.stream().anyMatch(elem -> elem.getMessage().equals("login is empty")));
+
+        User user3 = new User("test@test.com", "  test   test  ", LocalDate.of(1999, 1, 1));
+        Set<ConstraintViolation<User>> violations3 = validator.validate(user3);
+        assertEquals(1, violations3.size());
+        assertTrue(violations3.stream().anyMatch(elem -> elem.getMessage().equals("login with whitespaces")));
+
+        User user4 = new User(null, null, null);
+        Set<ConstraintViolation<User>> violations4 = validator.validate(user4);
+        assertEquals(2, violations4.size());
+        assertTrue(violations4.stream().anyMatch(elem -> elem.getMessage().equals("email is empty")));
+
     }
 
 }

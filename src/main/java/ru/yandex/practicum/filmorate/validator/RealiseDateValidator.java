@@ -7,15 +7,15 @@ import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
 
 import static ru.yandex.practicum.filmorate.util.Constant.MIN_RELEASE_DATE;
+
 @Slf4j
-public class RealiseDateValidator implements ConstraintValidator<RealiseDateContraint, LocalDate> {
+public class RealiseDateValidator implements ConstraintValidator<RealiseDateConstraints, LocalDate> {
     @Override
     public boolean isValid(LocalDate value, ConstraintValidatorContext context) {
-        if (value == null) {
-            log.error("RealiseDate не может быть null");
-            return false;
+        if (value == null) {   //так как есть аннотация NotNull
+            return true;
         }
-        boolean result  = value.isAfter(MIN_RELEASE_DATE);
+        boolean result = value.isAfter(MIN_RELEASE_DATE);
         if (!result) {
             log.error("RealiseDate раньше MIN_RELEASE_DATE: {}", MIN_RELEASE_DATE);
         }

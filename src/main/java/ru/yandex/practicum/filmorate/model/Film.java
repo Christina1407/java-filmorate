@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
-import ru.yandex.practicum.filmorate.validator.RealiseDateContraint;
+import ru.yandex.practicum.filmorate.validator.RealiseDateConstraints;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
@@ -13,12 +14,14 @@ import static ru.yandex.practicum.filmorate.util.Constant.MAX_LENGTH_DESCRIPTION
 @Data
 public class Film {
     private Integer id;
-    @NotEmpty
+    @NotEmpty(message = "name is empty")
     private final String name;
-    @Size(max = MAX_LENGTH_DESCRIPTION)
+    @Size(max = MAX_LENGTH_DESCRIPTION, message = "description is more than 200 symbols")
     private final String description;
-    @RealiseDateContraint
+    @NotNull(message = "releaseDate is null")
+    @RealiseDateConstraints
     private final LocalDate releaseDate;
-    @Positive
+    @NotNull(message = "duration is null")
+    @Positive(message = "duration is not positive")
     private final Integer duration;
 }

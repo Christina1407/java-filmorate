@@ -13,7 +13,8 @@ import java.util.Collection;
 @Slf4j
 public class UserController {
     UserRepository userRepository;
-    public UserController(  UserRepository userRepository) {
+
+    public UserController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -24,13 +25,15 @@ public class UserController {
 
     @PostMapping()
     public User create(@Valid @RequestBody User user) {
-        log.info("Добавление нового пользователя: {}", user);
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        log.info("Добавлен новый пользователь: {}", savedUser);
+        return savedUser;
     }
 
     @PutMapping
-    public User update(@Valid@RequestBody User user) {
-        log.info("Обновление пользователя: {}", user);
-        return userRepository.update(user);
+    public User update(@Valid @RequestBody User user) {
+        User updateUser = userRepository.update(user);
+        log.info("Пользователь обновлён : {}", updateUser);
+        return updateUser;
     }
 }

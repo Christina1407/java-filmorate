@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface FilmRepository {
     Film save(Film film);
+
     Film update(Film film);
+
     List<Film> findAll();
 }

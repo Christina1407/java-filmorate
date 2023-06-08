@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -7,17 +8,16 @@ import javax.validation.ValidationException;
 import java.util.*;
 
 @Repository
+@Slf4j
 public class UserRepositoryImpl implements UserRepository {
     private final Map<Integer, User> users = new HashMap<>();
     private int id = 0;
+
     @Override
     public User save(User user) {
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException();
-        }
         user.setId(++id);
         if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
-          user.setName(user.getLogin());
+            user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
         return user;
@@ -25,8 +25,9 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User update(User user) {
-        if(Objects.nonNull(user.getId())) {
+        if (Objects.nonNull(user.getId())) {
             if (!users.containsKey(user.getId())) {
+                log.error("Пользователя с таким id не найдено: {}", user.getId());
                 throw new ValidationException();
             } else {
                 users.put(user.getId(), user);
