@@ -9,10 +9,9 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 
-import static ru.yandex.practicum.filmorate.util.Constant.MAX_LENGTH_DESCRIPTION;
-
 @Data
 public class Film {
+    private static final int MAX_LENGTH_DESCRIPTION = 200;
     private Integer id;
     @NotEmpty(message = "name is empty")
     private final String name;

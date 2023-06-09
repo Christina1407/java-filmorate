@@ -6,10 +6,10 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
 
-import static ru.yandex.practicum.filmorate.util.Constant.MIN_RELEASE_DATE;
-
 @Slf4j
 public class RealiseDateValidator implements ConstraintValidator<RealiseDateConstraints, LocalDate> {
+    private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+
     @Override
     public boolean isValid(LocalDate value, ConstraintValidatorContext context) {
         if (value == null) {   //так как есть аннотация NotNull
