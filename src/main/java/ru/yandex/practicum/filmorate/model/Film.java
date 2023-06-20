@@ -27,9 +27,11 @@ public class Film {
     private final Integer duration;
 
     Set<Long> whoLikeId = new HashSet<>();
+
     public Boolean addLIke(Long userId) {
         return whoLikeId.add(userId);
     }
+
     public Boolean deleteLike(Long userId) {
         return whoLikeId.remove(userId);
     }

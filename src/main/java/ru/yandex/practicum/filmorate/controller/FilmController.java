@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @Slf4j
 public class FilmController {
     FilmService filmService;
+
     @Autowired
     public FilmController(FilmService filmService) {
         this.filmService = filmService;
@@ -37,17 +39,31 @@ public class FilmController {
         log.info("Фильм обновлён: {}", updateFilm);
         return updateFilm;
     }
+
     @GetMapping("{filmId}")
-    public Film findUser(@PathVariable("filmId") Long filmId) {
+    public Film findFilm(@PathVariable("filmId") Long filmId) {
         return filmService.findFilmById(filmId);
     }
+
     @GetMapping("popular")
-    public List<Film> findPopular(
-            @RequestParam(defaultValue = "10") Integer count) {
-        if(count <=0 ) {
+    public List<Film> findPopular(@RequestParam(defaultValue = "10") Integer count) {
+        if (count <= 0) {
             throw new IncorrectParameterException("count");
         }
         return filmService.popularFilms(count);
     }
 
+    @PutMapping("{filmId}/like/{userId}")
+    public void addLike(@PathVariable("filmId") Long filmId,
+                        @PathVariable("userId") Long userId) {
+        filmService.addLike(filmId, userId);
+        log.info("Пользователь id = : " + userId + " поставил like фильму id = " + filmId);
+    }
+
+    @DeleteMapping("{filmId}/like/{userId}")
+    public void deleteLike(@PathVariable("filmId") Long filmId,
+                           @PathVariable("userId") Long userId) {
+        filmService.deleteLike(filmId, userId);
+        log.info("Пользователь id = : " + userId + " удалил like фильму id = " + filmId);
+    }
 }

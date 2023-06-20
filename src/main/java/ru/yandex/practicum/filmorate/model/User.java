@@ -26,8 +26,9 @@ public class User {
     Set<Long> friendsId = new HashSet<>();
 
     public Boolean addFriend(Long userId) {
-       return friendsId.add(userId);
+        return friendsId.add(userId);
     }
+
     public Boolean deleteFriend(Long userId) {
         return friendsId.remove(userId);
     }
