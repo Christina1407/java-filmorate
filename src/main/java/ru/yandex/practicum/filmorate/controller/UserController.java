@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.RelationType;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -49,8 +50,9 @@ public class UserController {
     public void addFriend(@PathVariable("userId") Long userId,
                           @PathVariable("friendId") Long friendId) {
         userService.addFriend(userId, friendId);
-        log.info("Пользователь id = " + userId + " и пользователь id = " + friendId + " теперь друзья");
+        log.info("Пользователь id = " + userId + " добавил в друзья пользователя id = " + friendId);
     }
+
 
     @DeleteMapping("{userId}/friends/{friendId}")
     public void deleteFriend(@PathVariable("userId") Long userId,

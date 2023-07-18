@@ -24,6 +24,18 @@ public class ExceptionsHandler {
         return new ExceptionResponse("Искомый объект не найден");
     }
 
+//    @ExceptionHandler
+//    @ResponseStatus(HttpStatus.NOT_FOUND)
+//    public ExceptionResponse handleNotFoundException(final AlreadyExistsException e) {
+//        Map<String, String> errors = new HashMap<>();
+//        e.getBindingResult().getAllErrors().forEach(error -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+//        return new ExceptionValidationResponse(errors);
+//    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ExceptionResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {

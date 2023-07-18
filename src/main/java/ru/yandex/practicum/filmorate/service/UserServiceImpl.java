@@ -1,38 +1,63 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.RelationType;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
+    private final FriendshipStorage friendshipStorage;
 
     @Autowired
-    public UserServiceImpl(UserStorage userStorage) {
+    public UserServiceImpl(@Qualifier("userDbStorage") UserStorage userStorage, FriendshipStorage friendshipStorage) {
         this.userStorage = userStorage;
+        this.friendshipStorage = friendshipStorage;
     }
 
     @Override
     public void addFriend(Long userId, Long friendId) {
         User user = userStorage.findUserById(userId);
         User userFriend = userStorage.findUserById(friendId);
+        //проверяем, что пользователи существуют
         if (Objects.nonNull(user) && Objects.nonNull(userFriend)) {
-            if (user.addFriend(friendId)) {
-                userFriend.addFriend(userId);
-            } else {
-                throw new AlreadyExistsException();
+            Friendship friendship = friendshipStorage.findFriendshipByUserIdAndFriendId(userId, friendId);
+            //если запись о дружбе уже существует, то выбрасываем исключение
+            if (Objects.nonNull(friendship)) {
+                if (RelationType.FRIEND.equals(friendship.getRelationType())) {
+                    log.error("Пользователи уже друзья");
+                    throw new AlreadyExistsException(); // TODO fix me
+                }
+                log.error("Запрос на добавление в друзья пользователю id = {} уже отправлен", friendId);
+                throw new AlreadyExistsException(); // TODO fix me
             }
-
+            Friendship friendshipFriend = friendshipStorage.findFriendshipByUserIdAndFriendId(friendId, userId);
+            // проверяем наличие обратной записи в таблице дружба
+            if (Objects.nonNull(friendshipFriend)) {
+                if (RelationType.FRIEND.equals(friendshipFriend.getRelationType())) {
+                    log.error("Пользователи уже друзья");
+                    throw new RuntimeException(); // TODO fix me
+                }
+                //подтверждение дружбы
+                friendshipStorage.updateFriendship(friendId, userId, RelationType.FRIEND);
+                friendshipStorage.addFriendship(userId, friendId, RelationType.FRIEND);
+                //создаем заявку на добавление в друзья
+            } else {
+                friendshipStorage.addFriendship(userId,friendId, RelationType.NOT_APPROVED_FRIEND);
+            }
         } else {
+            log.error("Проверьте айди пользователей");
             throw new NotFoundException();
         }
     }
@@ -42,8 +67,18 @@ public class UserServiceImpl implements UserService {
         User user = userStorage.findUserById(userId);
         User userFriend = userStorage.findUserById(friendId);
         if (Objects.nonNull(user) && Objects.nonNull(userFriend)) {
-            user.deleteFriend(friendId);
-            userFriend.deleteFriend(userId);
+            Friendship friendship = friendshipStorage.findFriendshipByUserIdAndFriendId(userId, friendId);
+            if (Objects.nonNull(friendship)) {
+                if (RelationType.FRIEND.equals(friendship.getRelationType())) {
+                    friendshipStorage.deleteFriendship(userId, friendId);
+                    friendshipStorage.updateFriendship(friendId, userId, RelationType.NOT_APPROVED_FRIEND);
+                } else if (RelationType.NOT_APPROVED_FRIEND.equals(friendship.getRelationType())) {
+                    friendshipStorage.deleteFriendship(userId, friendId);
+                } else {
+                    log.error("Найден недопустимый тип дружбы");
+                    throw new NotFoundException();
+                }
+            }
         }
     }
 
@@ -52,9 +87,11 @@ public class UserServiceImpl implements UserService {
         User user = userStorage.findUserById(userId);
         User otherUser = userStorage.findUserById(otherId);
         if (Objects.nonNull(user) && Objects.nonNull(otherUser)) {
-            Set<Long> mutualFriends = new HashSet<>(userStorage.findUserById(userId).getFriendsId());
-            mutualFriends.retainAll(userStorage.findUserById(otherId).getFriendsId());
-            return userStorage.findUsersByIds(mutualFriends);
+            Set<Long> userFriends = new HashSet<>(friendshipStorage.findUsersFriendsIds(userId));
+            Set<Long> otherFriends = new HashSet<>(friendshipStorage.findUsersFriendsIds(otherId));
+            //находим пересечение по айди
+            userFriends.retainAll(otherFriends);
+            return userStorage.findUsersByIds(new ArrayList<>(userFriends));
         } else {
             throw new NotFoundException();
         }
@@ -67,7 +104,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(User user) {
-        return userStorage.update(user);
+        User updateUser = userStorage.update(user);
+        if (Objects.isNull(updateUser)) {
+            log.error("Пользователь для обновления не найден");
+            throw new NotFoundException();
+        }
+        return updateUser;
     }
 
     @Override
@@ -88,7 +130,8 @@ public class UserServiceImpl implements UserService {
     public List<User> findUsersFriends(Long userId) {
         User user = userStorage.findUserById(userId);
         if (Objects.nonNull(user)) {
-            return userStorage.findUsersByIds(user.getFriendsId());
+            return userStorage.findUsersByIds(friendshipStorage.findUsersFriendsIds(userId));
+
         } else {
             throw new NotFoundException();
         }

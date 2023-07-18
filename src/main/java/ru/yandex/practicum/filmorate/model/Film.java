@@ -8,7 +8,9 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -25,8 +27,11 @@ public class Film {
     @NotNull(message = "duration is null")
     @Positive(message = "duration is not positive")
     private final Integer duration;
+    private final List<Genre> genres = new ArrayList<>();
+    private final RatingMPA ratingMPA;
+    private final List<FilmLike> filmLike = new ArrayList<>();
 
-    Set<Long> whoLikeId = new HashSet<>();
+    Set<Long> whoLikeId = new HashSet<>();// TODO убрать
 
     public Boolean addLIke(Long userId) {
         return whoLikeId.add(userId);

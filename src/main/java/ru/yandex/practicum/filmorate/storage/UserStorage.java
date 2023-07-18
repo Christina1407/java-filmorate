@@ -14,5 +14,5 @@ public interface UserStorage {
 
     User findUserById(Long userId);
 
-    List<User> findUsersByIds(Set<Long> friendsId);
+    List<User> findUsersByIds(List<Long> friendsId);
 }

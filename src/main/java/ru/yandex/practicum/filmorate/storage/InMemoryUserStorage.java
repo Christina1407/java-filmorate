@@ -10,6 +10,11 @@ import java.util.*;
 @Repository
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
+    @Override
+    public List<User> findUsersByIds(List<Long> friendsId) {
+        return null;
+    }
+
     private final Map<Long, User> users = new HashMap<>();
     private long id = 0;
 
@@ -47,17 +52,5 @@ public class InMemoryUserStorage implements UserStorage {
     public User findUserById(Long userId) {
         return users.get(userId);
     }
-
-    @Override
-    public List<User> findUsersByIds(Set<Long> friendsId) {
-        List<User> userFriends = new ArrayList<>();
-        friendsId.forEach(id -> {
-            if (users.containsKey(id)) {
-                userFriends.add(users.get(id));
-            }
-        });
-        return userFriends;
-    }
-
 
 }
