@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -15,14 +17,17 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FilmLikeStorage filmLikeStorage;
 
     @Autowired
-    public FilmServiceImpl(FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage) {
+    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, FilmLikeStorage filmLikeStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.filmLikeStorage = filmLikeStorage;
     }
 
     @Override
@@ -30,7 +35,7 @@ public class FilmServiceImpl implements FilmService {
         Film film = filmStorage.findFilmById(filmId);
         User user = userStorage.findUserById(userId);
         if (Objects.nonNull(film) && Objects.nonNull(user)) {
-            film.addLIke(userId);
+            filmLikeStorage.addLike(userId, filmId);
         } else {
             throw new NotFoundException();
         }
@@ -42,7 +47,7 @@ public class FilmServiceImpl implements FilmService {
         Film film = filmStorage.findFilmById(filmId);
         User user = userStorage.findUserById(userId);
         if (Objects.nonNull(film) && Objects.nonNull(user)) {
-            film.deleteLike(userId);
+            filmLikeStorage.deleteLike(userId, filmId);
         } else {
             throw new NotFoundException();
         }
@@ -51,10 +56,10 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public List<Film> popularFilms(Integer count) {
         Comparator<Film> comparator = (film1, film2) -> {
-            if (film1.getWhoLikeId().isEmpty() && film2.getWhoLikeId().isEmpty()) {
+            if (filmLikeStorage.whoLikeFilm(film1.getId()).isEmpty() && filmLikeStorage.whoLikeFilm(film2.getId()).isEmpty()) {
                 return Math.toIntExact(film2.getId() - film1.getId());
             } else {
-                return film2.getWhoLikeId().size() - film1.getWhoLikeId().size();
+                return filmLikeStorage.whoLikeFilm(film1.getId()).size() - filmLikeStorage.whoLikeFilm(film2.getId()).size();
             }
         };
         return filmStorage.findAll().stream()
@@ -69,7 +74,12 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film updateFilm(Film film) {
-        return filmStorage.update(film);
+        Film update = filmStorage.update(film);
+        if (Objects.isNull(update)) {
+            log.error("Фильм не найден");
+            throw new NotFoundException();
+        }
+        return update;
     }
 
     @Override

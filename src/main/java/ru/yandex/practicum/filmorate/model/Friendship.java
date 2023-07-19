@@ -6,7 +6,8 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Friendship {
-     private RelationType relationType;
-     private Long userId;
-     private Long friendId;
+     private final Long friendshipId;
+     private final RelationType relationType;
+     private final Long userId;
+     private final Long friendId;
 }

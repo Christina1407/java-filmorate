@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -22,8 +24,9 @@ public class FilmController {
     }
 
     @GetMapping()
-    public List<Film> findAll() {
-        return filmService.getAllFilms();
+    public List<FilmDto> findAll() {
+        List<Film> allFilms = filmService.getAllFilms();
+        return FilmMapper.map(allFilms);
     }
 
     @PostMapping()
@@ -41,8 +44,9 @@ public class FilmController {
     }
 
     @GetMapping("{filmId}")
-    public Film findFilm(@PathVariable("filmId") Long filmId) {
-        return filmService.findFilmById(filmId);
+    public FilmDto findFilm(@PathVariable("filmId") Long filmId) {
+        Film film = filmService.findFilmById(filmId);
+        return FilmMapper.map(film);
     }
 
     @GetMapping("popular")

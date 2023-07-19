@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.impl.db;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.RelationType;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -99,6 +100,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
         @Override
         public Friendship mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new Friendship(
+                    rs.getLong("friendship_id"),
                     RelationType.valueOf(rs.getString("relation_type")),
                     rs.getLong("user_id"),
                     rs.getLong("friend_id")

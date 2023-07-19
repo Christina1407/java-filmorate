@@ -1,12 +1,26 @@
 package ru.yandex.practicum.filmorate.model;
 
-public enum RatingMPA {
-    G,
-    PG,
-    PG13,
-    R,
-    NC17
-//    G — у фильма нет возрастных ограничений,
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public enum EnumMPA {
+    G("G"),
+    PG("PG"),
+    PG_13("PG-13"),
+    R("R"),
+    NC_17("NC-17");
+
+    private final String name;
+    EnumMPA(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    //    G — у фильма нет возрастных ограничений,
 //    PG — детям рекомендуется смотреть фильм с родителями,
 //    PG-13 — детям до 13 лет просмотр не желателен,
 //    R — лицам до 17 лет просматривать фильм можно только в присутствии взрослого,
