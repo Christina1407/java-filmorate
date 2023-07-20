@@ -6,10 +6,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.EnumMPA;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
+import ru.yandex.practicum.filmorate.model.enums.EnumMPA;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
@@ -90,7 +90,6 @@ public class FilmDbStorage implements FilmStorage {
         if (Objects.isNull(keyHolder.getKey())) {
             return null;
         }
-        film.setId(keyHolder.getKey().longValue());
         updateFilmGenres(film);  //при обновлении нужно вносить изменения в film_genre
         return findFilmById(film.getId());
     }

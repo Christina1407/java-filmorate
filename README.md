@@ -89,11 +89,11 @@ FROM "friendship"
 WHERE user_id = 2 AND relation_type = 'NOT_APPROVED_FRIEND'
 )
 ````
-3) Получение 5 наиболее популярных фильмов
+3) Получение 5 наиболее популярных фильмов по количеству лайков
 ````
-SELECT f.FILM_ID, COUNT(f.FILM_ID)  
+SELECT f.FILM_ID, COUNT(fl.FILM_ID) as LIKES_COUNT
 FROM "film" AS f
-JOIN "film_like" AS fl ON f.FILM_ID = fl.FILM_ID 
+LEFT JOIN "film_like" AS fl ON f.FILM_ID = fl.FILM_ID 
 GROUP BY f.FILM_ID
 ORDER BY COUNT(fl.USER_ID) DESC 
 LIMIT 5

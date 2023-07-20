@@ -57,15 +57,22 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public List<Film> popularFilms(Integer count) {
         Comparator<Film> comparator = (film1, film2) -> {
-            if (filmLikeStorage.whoLikeFilm(film1.getId()).isEmpty() && filmLikeStorage.whoLikeFilm(film2.getId()).isEmpty()) {
+            List<Long> whoLikeFilm1 = filmLikeStorage.whoLikeFilm(film1.getId());
+            List<Long> whoLikeFilm2 = filmLikeStorage.whoLikeFilm(film2.getId());
+            if (whoLikeFilm1.isEmpty() && whoLikeFilm2.isEmpty()) {
                 return Math.toIntExact(film2.getId() - film1.getId());
+            } else if (whoLikeFilm1.isEmpty()) {
+                return 1;
+            } else if (whoLikeFilm2.isEmpty()) {
+                return -1;
             } else {
-                return filmLikeStorage.whoLikeFilm(film1.getId()).size() - filmLikeStorage.whoLikeFilm(film2.getId()).size();
+                return whoLikeFilm1.size() - whoLikeFilm2.size();
             }
         };
         return filmStorage.findAll().stream()
                 .sorted(comparator)
-                .limit(count).collect(Collectors.toList());
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     @Override

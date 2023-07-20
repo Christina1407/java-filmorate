@@ -47,7 +47,7 @@ public class GenreDbStorage implements GenreStorage {
         }
     }
 
-    public static class GenreRowMapper implements RowMapper<Genre> {
+    static class GenreRowMapper implements RowMapper<Genre> {
         @Override
         public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new Genre(
