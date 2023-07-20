@@ -7,8 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.RelationType;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.EnumRelationType;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 
 import java.sql.ResultSet;
@@ -26,7 +25,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
 
     @Override
-    public void addFriendship(Long userId, Long friendId, RelationType relationType) {
+    public void addFriendship(Long userId, Long friendId, EnumRelationType relationType) {
         String sqlQuery = "insert into \"friendship\" (user_id, friend_id, relation_type) values (:user_id, :friend_id, :relation_type)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -39,7 +38,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
     }
 
     @Override
-    public void updateFriendship(Long userId, Long friendId, RelationType relationType) {
+    public void updateFriendship(Long userId, Long friendId, EnumRelationType relationType) {
         String sqlQuery = "update \"friendship\" set relation_type = :relation_type where user_id = :user_id and friend_id = :friend_id";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -101,7 +100,7 @@ public class FriendshipDbStorage implements FriendshipStorage {
         public Friendship mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new Friendship(
                     rs.getLong("friendship_id"),
-                    RelationType.valueOf(rs.getString("relation_type")),
+                    EnumRelationType.valueOf(rs.getString("relation_type")),
                     rs.getLong("user_id"),
                     rs.getLong("friend_id")
             );

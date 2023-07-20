@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,8 +7,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.RelationType;
+import ru.yandex.practicum.filmorate.model.EnumRelationType;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -35,7 +36,7 @@ public class UserServiceImpl implements UserService {
             Friendship friendship = friendshipStorage.findFriendshipByUserIdAndFriendId(userId, friendId);
             //если запись о дружбе уже существует, то выбрасываем исключение
             if (Objects.nonNull(friendship)) {
-                if (RelationType.FRIEND.equals(friendship.getRelationType())) {
+                if (EnumRelationType.FRIEND.equals(friendship.getRelationType())) {
                     log.error("Пользователи уже друзья");
                     throw new AlreadyExistsException(); // TODO fix me
                 }
@@ -45,16 +46,16 @@ public class UserServiceImpl implements UserService {
             Friendship friendshipFriend = friendshipStorage.findFriendshipByUserIdAndFriendId(friendId, userId);
             // проверяем наличие обратной записи в таблице дружба
             if (Objects.nonNull(friendshipFriend)) {
-                if (RelationType.FRIEND.equals(friendshipFriend.getRelationType())) {
+                if (EnumRelationType.FRIEND.equals(friendshipFriend.getRelationType())) {
                     log.error("Пользователи уже друзья");
                     throw new RuntimeException(); // TODO fix me
                 }
                 //подтверждение дружбы
-                friendshipStorage.updateFriendship(friendId, userId, RelationType.FRIEND);
-                friendshipStorage.addFriendship(userId, friendId, RelationType.FRIEND);
+                friendshipStorage.updateFriendship(friendId, userId, EnumRelationType.FRIEND);
+                friendshipStorage.addFriendship(userId, friendId, EnumRelationType.FRIEND);
                 //создаем заявку на добавление в друзья
             } else {
-                friendshipStorage.addFriendship(userId,friendId, RelationType.NOT_APPROVED_FRIEND);
+                friendshipStorage.addFriendship(userId,friendId, EnumRelationType.NOT_APPROVED_FRIEND);
             }
         } else {
             log.error("Проверьте айди пользователей");
@@ -69,10 +70,10 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(user) && Objects.nonNull(userFriend)) {
             Friendship friendship = friendshipStorage.findFriendshipByUserIdAndFriendId(userId, friendId);
             if (Objects.nonNull(friendship)) {
-                if (RelationType.FRIEND.equals(friendship.getRelationType())) {
+                if (EnumRelationType.FRIEND.equals(friendship.getRelationType())) {
                     friendshipStorage.deleteFriendship(userId, friendId);
-                    friendshipStorage.updateFriendship(friendId, userId, RelationType.NOT_APPROVED_FRIEND);
-                } else if (RelationType.NOT_APPROVED_FRIEND.equals(friendship.getRelationType())) {
+                    friendshipStorage.updateFriendship(friendId, userId, EnumRelationType.NOT_APPROVED_FRIEND);
+                } else if (EnumRelationType.NOT_APPROVED_FRIEND.equals(friendship.getRelationType())) {
                     friendshipStorage.deleteFriendship(userId, friendId);
                 } else {
                     log.error("Найден недопустимый тип дружбы");

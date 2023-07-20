@@ -1,15 +1,13 @@
+![alt text](Database.png )
+
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
-
-
 Table user {
 user_id bigint [primary key]
 email varchar
 login varchar
 name varchar
 birthday date
-
-
 }
 
 Table friendship {
@@ -48,8 +46,6 @@ Table  rating_mpa {
 rating_id int [primary key]
 name enum ('G', 'PG', 'PG-13',
 'R', 'NC-17')
-
-
 }
 
 Ref: user.user_id < friendship.user_id // one-to-many
@@ -60,6 +56,10 @@ Ref: film.film_id < film_like.film_id // one-to-many
 Ref: user.user_id < film_like.user_id // one-to-many
 Ref: film.rating_id - rating_mpa.rating_id // one-to-one
 
-
+Логика приложения:
+1) Добавление в друзья: 1.Подтверждённая дружба EnumRelationType.FRIEND;
+                        2.Односторонняя дружба EnumRelationType.NOT_APPROVED_FRIEND. Если какой-то пользователь 
+                          оставил вам заявку в друзья, то он будет в списке ваших друзей, а вы в его — нет.
+2) 
 
 
