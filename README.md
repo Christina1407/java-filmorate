@@ -1,7 +1,16 @@
+## Filmorate
+Приложение, которое умеет обрабатывать и хранить данные о пользователях и их любимых фильмах.
+
+Пользователи могут:
+- Ставить лайки фильмам
+- Искать наиболее популярные по количеству лайков фильмы
+- Добавлять других пользователей в друзья
+
+## Database structure
 ![alt text](Database.png )
 
-// Use DBML to define your database structure
-// Docs: https://dbml.dbdiagram.io/docs
+*https://dbdiagram.io/d*
+````
 Table user {
 user_id bigint [primary key]
 email varchar
@@ -55,11 +64,48 @@ Ref: genre.genre_id < film_genre.genre_id // one-to-many
 Ref: film.film_id < film_like.film_id // one-to-many
 Ref: user.user_id < film_like.user_id // one-to-many
 Ref: film.rating_id - rating_mpa.rating_id // one-to-one
-
-Логика приложения:
-1) Добавление в друзья: 1.Подтверждённая дружба EnumRelationType.FRIEND;
-                        2.Односторонняя дружба EnumRelationType.NOT_APPROVED_FRIEND. Если какой-то пользователь 
-                          оставил вам заявку в друзья, то он будет в списке ваших друзей, а вы в его — нет.
-2) 
-
-
+````
+## Примеры запросов
+1) Получение общих друзей двух пользователей с id 1 и 2 
+````
+SELECT * 
+FROM "user"
+WHERE user_id IN (
+SELECT friend_id 
+FROM "friendship"
+WHERE user_id = 1 
+INTERSECT 
+SELECT friend_id 
+FROM "friendship" 
+WHERE user_id = 2)
+````
+2) Получение всех неподтверждённых друзей пользователя id = 2
+````
+SELECT * 
+FROM "user"
+WHERE user_id IN (
+SELECT friend_id 
+FROM "friendship"
+WHERE user_id = 2 AND relation_type = 'NOT_APPROVED_FRIEND'
+)
+````
+3) Получение 5 наиболее популярных фильмов
+````
+SELECT f.FILM_ID, COUNT(f.FILM_ID)  
+FROM "film" AS f
+JOIN "film_like" AS fl ON f.FILM_ID = fl.FILM_ID 
+GROUP BY f.FILM_ID
+ORDER BY COUNT(fl.USER_ID) DESC 
+LIMIT 5
+````
+4) Получение рейтинга по идентификатору
+````
+SELECT name
+FROM "rating_mpa" rm
+WHERE RATING_ID = 5
+````
+5) Создание фильма 
+````
+INSERT  INTO  "film" (name, description, release_date, duration, rating_id)  
+VALUES (?, ?, ?, ?, ?)
+````

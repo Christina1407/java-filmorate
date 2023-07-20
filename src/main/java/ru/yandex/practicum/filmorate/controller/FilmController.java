@@ -50,11 +50,11 @@ public class FilmController {
     }
 
     @GetMapping("popular")
-    public List<Film> findPopular(@RequestParam(defaultValue = "10") Integer count) {
+    public List<FilmDto> findPopular(@RequestParam(defaultValue = "10") Integer count) {
         if (count <= 0) {
             throw new IncorrectParameterException("count");
         }
-        return filmService.popularFilms(count);
+        return FilmMapper.map(filmService.popularFilms(count));
     }
 
     @PutMapping("{filmId}/like/{userId}")

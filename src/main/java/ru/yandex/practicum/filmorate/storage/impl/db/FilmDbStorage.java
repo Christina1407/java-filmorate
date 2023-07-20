@@ -1,20 +1,22 @@
 package ru.yandex.practicum.filmorate.storage.impl.db;
 
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.EnumMPA;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import javax.validation.ValidationException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
@@ -46,17 +48,29 @@ public class FilmDbStorage implements FilmStorage {
 
     private void insertIntoFilmGenres(Film film) {
         if (Objects.nonNull(film.getGenres())) {
-            film.getGenres().forEach(
-                elem -> {
-                    String sqlQueryFilmGenre = "insert into \"film_genre\" (film_id, genre_id) values (:film_id, :genre_id)";
-                    KeyHolder keyHolderFilmGenre = new GeneratedKeyHolder();
-                    MapSqlParameterSource mapFilmGenre = new MapSqlParameterSource();
-                    mapFilmGenre.addValue("film_id", film.getId());
-                    mapFilmGenre.addValue("genre_id", elem.getId());
-                    jdbcOperations.update(sqlQueryFilmGenre, mapFilmGenre, keyHolderFilmGenre);
-                }
-            );
+            film.getGenres().stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.toSet())
+                    .forEach(
+                            elem -> {
+                                String sqlQueryFilmGenre = "insert into \"film_genre\" (film_id, genre_id) values (:film_id, :genre_id)";
+                                KeyHolder keyHolderFilmGenre = new GeneratedKeyHolder();
+                                MapSqlParameterSource mapFilmGenre = new MapSqlParameterSource();
+                                mapFilmGenre.addValue("film_id", film.getId());
+                                mapFilmGenre.addValue("genre_id", elem);
+                                jdbcOperations.update(sqlQueryFilmGenre, mapFilmGenre, keyHolderFilmGenre);
+                            }
+                    );
         }
+    }
+
+    private void updateFilmGenres(Film film) {
+        String sqlQueryDeleteFilmGenre = "delete from \"film_genre\" where film_id = :film_id";
+        KeyHolder keyHolderDeleteFilmGenre = new GeneratedKeyHolder();
+        MapSqlParameterSource mapDeleteFilmGenre = new MapSqlParameterSource();
+        mapDeleteFilmGenre.addValue("film_id", film.getId());
+        jdbcOperations.update(sqlQueryDeleteFilmGenre, mapDeleteFilmGenre, keyHolderDeleteFilmGenre);
+        insertIntoFilmGenres(film);
     }
 
     @Override
@@ -77,8 +91,8 @@ public class FilmDbStorage implements FilmStorage {
             return null;
         }
         film.setId(keyHolder.getKey().longValue());
-      //  insertIntoFilmGenres(film);  //при обновлении нужно вносить изменения в film_genre
-        return film;
+        updateFilmGenres(film);  //при обновлении нужно вносить изменения в film_genre
+        return findFilmById(film.getId());
     }
 
     @Override

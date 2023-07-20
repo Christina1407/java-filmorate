@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.EnumRelationType;
+import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
                 friendshipStorage.addFriendship(userId, friendId, EnumRelationType.FRIEND);
                 //создаем заявку на добавление в друзья
             } else {
-                friendshipStorage.addFriendship(userId,friendId, EnumRelationType.NOT_APPROVED_FRIEND);
+                friendshipStorage.addFriendship(userId, friendId, EnumRelationType.NOT_APPROVED_FRIEND);
             }
         } else {
             log.error("Проверьте айди пользователей");

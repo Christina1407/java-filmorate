@@ -17,7 +17,8 @@ import java.util.List;
 @RequestMapping("/mpa")
 @Slf4j
 public class RatingMPAController {
-   RatingService ratingService;
+    RatingService ratingService;
+
     @Autowired
     public RatingMPAController(RatingService ratingService) {
         this.ratingService = ratingService;
@@ -27,6 +28,7 @@ public class RatingMPAController {
     public List<RatingMpaDto> findAll() {
         return RatingMpaMapper.map(ratingService.getAllRatings());
     }
+
     @GetMapping("{ratingId}")
     public RatingMpa findUser(@PathVariable("ratingId") int ratingId) {
         return ratingService.findRatingById(ratingId);

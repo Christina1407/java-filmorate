@@ -54,9 +54,9 @@ public class UserDbStorage implements UserStorage {
         map.addValue("birthday", user.getBirthday());
 
         jdbcOperations.update(sqlQuery, map, keyHolder);
-       if (Objects.isNull(keyHolder.getKey())) {
-           return null;
-       }
+        if (Objects.isNull(keyHolder.getKey())) {
+            return null;
+        }
         user.setId(keyHolder.getKey().longValue());
         return user;
     }

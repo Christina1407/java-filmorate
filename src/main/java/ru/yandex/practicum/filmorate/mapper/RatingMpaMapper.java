@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
-import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.dto.RatingMpaDto;
 
 import java.util.List;

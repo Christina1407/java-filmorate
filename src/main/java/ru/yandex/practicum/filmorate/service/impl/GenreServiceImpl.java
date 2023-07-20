@@ -13,6 +13,7 @@ import java.util.Objects;
 @Service
 public class GenreServiceImpl implements GenreService {
     private final GenreStorage genreStorage;
+
     @Autowired
     public GenreServiceImpl(GenreStorage genreStorage) {
         this.genreStorage = genreStorage;

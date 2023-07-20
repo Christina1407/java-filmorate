@@ -16,6 +16,7 @@ import java.util.List;
 @Slf4j
 public class GenreController {
     GenreService genreService;
+
     @Autowired
     public GenreController(GenreService genreService) {
         this.genreService = genreService;
@@ -25,6 +26,7 @@ public class GenreController {
     public List<Genre> findAll() {
         return genreService.getAllGenres();
     }
+
     @GetMapping("{genreId}")
     public Genre findUser(@PathVariable("genreId") int genreId) {
         return genreService.findGenreById(genreId);

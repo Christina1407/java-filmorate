@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.model.dto;
 
 import lombok.Data;
-import ru.yandex.practicum.filmorate.model.EnumMPA;
 
 @Data
 public class RatingMpaDto {

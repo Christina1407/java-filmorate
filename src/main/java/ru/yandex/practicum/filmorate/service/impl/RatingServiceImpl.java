@@ -19,7 +19,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public List<RatingMpa> getAllRatings() {
-       return ratingStorage.findAll();
+        return ratingStorage.findAll();
     }
 
     @Override

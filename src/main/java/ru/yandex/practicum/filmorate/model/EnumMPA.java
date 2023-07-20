@@ -1,9 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 public enum EnumMPA {
     G("G"),
     PG("PG"),
@@ -12,6 +8,7 @@ public enum EnumMPA {
     NC_17("NC-17");
 
     private final String name;
+
     EnumMPA(String name) {
         this.name = name;
     }
