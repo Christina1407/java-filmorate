@@ -84,7 +84,6 @@ public class UserDbStorage implements UserStorage {
         } else {
             return user.get(0);
         }
-
     }
 
     @Override

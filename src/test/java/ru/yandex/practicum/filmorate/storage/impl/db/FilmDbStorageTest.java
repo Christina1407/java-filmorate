@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.enums.EnumMPA;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,9 +51,19 @@ class FilmDbStorageTest {
 
     @Test
     void findAll() {
+        List<Film> films = filmStorage.findAll();
+        assertThat(films.size()).isEqualTo(3);
+        assertThat(films.get(1).getName()).isEqualTo("test2");
     }
 
     @Test
     void findFilmById() {
+        Optional<Film> filmOptional = Optional.ofNullable(filmStorage.findFilmById(3L));
+        assertThat(filmOptional)
+                .isPresent()
+                .hasValueSatisfying(film ->
+                        assertThat(film).hasFieldOrPropertyWithValue("id", 3L)
+                                .hasFieldOrPropertyWithValue("duration", 90)
+                );
     }
 }

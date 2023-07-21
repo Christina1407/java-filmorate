@@ -60,7 +60,6 @@ public class FriendshipDbStorage implements FriendshipStorage {
         map.addValue("friend_id", friendId);
 
         jdbcOperations.update(sqlQuery, map, keyHolder);
-
     }
 
     @Override

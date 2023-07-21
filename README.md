@@ -1,15 +1,19 @@
 ## Filmorate
+
 Приложение, которое умеет обрабатывать и хранить данные о пользователях и их любимых фильмах.
 
 Пользователи могут:
+
 - Ставить лайки фильмам
 - Искать наиболее популярные по количеству лайков фильмы
 - Добавлять других пользователей в друзья
 
 ## Database structure
+
 ![alt text](Database.png )
 
 *https://dbdiagram.io/d*
+
 ````
 Table user {
 user_id bigint [primary key]
@@ -65,8 +69,11 @@ Ref: film.film_id < film_like.film_id // one-to-many
 Ref: user.user_id < film_like.user_id // one-to-many
 Ref: film.rating_id - rating_mpa.rating_id // one-to-one
 ````
+
 ## Примеры запросов
-1) Получение общих друзей двух пользователей с id 1 и 2 
+
+1) Получение общих друзей двух пользователей с id 1 и 2
+
 ````
 SELECT * 
 FROM "user"
@@ -79,7 +86,9 @@ SELECT friend_id
 FROM "friendship" 
 WHERE user_id = 2)
 ````
+
 2) Получение всех неподтверждённых друзей пользователя id = 2
+
 ````
 SELECT * 
 FROM "user"
@@ -89,7 +98,9 @@ FROM "friendship"
 WHERE user_id = 2 AND relation_type = 'NOT_APPROVED_FRIEND'
 )
 ````
+
 3) Получение 5 наиболее популярных фильмов по количеству лайков
+
 ````
 SELECT f.FILM_ID, COUNT(fl.FILM_ID) as LIKES_COUNT
 FROM "film" AS f
@@ -98,13 +109,17 @@ GROUP BY f.FILM_ID
 ORDER BY COUNT(fl.USER_ID) DESC 
 LIMIT 5
 ````
+
 4) Получение рейтинга по идентификатору
+
 ````
 SELECT name
 FROM "rating_mpa" rm
 WHERE RATING_ID = 5
 ````
-5) Создание фильма 
+
+5) Создание фильма
+
 ````
 INSERT  INTO  "film" (name, description, release_date, duration, rating_id)  
 VALUES (?, ?, ?, ?, ?)

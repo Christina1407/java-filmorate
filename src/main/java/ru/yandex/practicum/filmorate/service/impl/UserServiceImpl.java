@@ -38,17 +38,17 @@ public class UserServiceImpl implements UserService {
             if (Objects.nonNull(friendship)) {
                 if (EnumRelationType.FRIEND.equals(friendship.getRelationType())) {
                     log.error("Пользователи уже друзья");
-                    throw new AlreadyExistsException(); // TODO fix me
+                    throw new AlreadyExistsException();
                 }
                 log.error("Запрос на добавление в друзья пользователю id = {} уже отправлен", friendId);
-                throw new AlreadyExistsException(); // TODO fix me
+                throw new AlreadyExistsException();
             }
             Friendship friendshipFriend = friendshipStorage.findFriendshipByUserIdAndFriendId(friendId, userId);
             // проверяем наличие обратной записи в таблице дружба
             if (Objects.nonNull(friendshipFriend)) {
                 if (EnumRelationType.FRIEND.equals(friendshipFriend.getRelationType())) {
                     log.error("Пользователи уже друзья");
-                    throw new RuntimeException(); // TODO fix me
+                    throw new RuntimeException();
                 }
                 //подтверждение дружбы
                 friendshipStorage.updateFriendship(friendId, userId, EnumRelationType.FRIEND);
