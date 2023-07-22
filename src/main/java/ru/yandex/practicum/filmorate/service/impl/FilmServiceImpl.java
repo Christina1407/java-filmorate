@@ -84,7 +84,9 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film saveFilm(Film film) {
-        return filmStorage.save(film);
+        Film save = filmStorage.save(film);
+        filmGenreStorage.insertIntoFilmGenres(save);
+        return save;
     }
 
     @Override
@@ -94,6 +96,8 @@ public class FilmServiceImpl implements FilmService {
             log.error("Фильм не найден");
             throw new NotFoundException();
         }
+        //при обновлении нужно вносить изменения в БД film_genre
+        filmGenreStorage.updateFilmGenres(film);
         enrichFilmGenres(List.of(update));
         return update;
     }

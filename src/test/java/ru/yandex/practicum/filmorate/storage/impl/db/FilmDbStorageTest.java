@@ -40,12 +40,10 @@ class FilmDbStorageTest {
 
     @Test
     void update() {
-        List<Genre> genres = List.of(new Genre(3, "Мультфильм"));
-        Film updated = new Film(1L, "update", "test1", LocalDate.of(1994, 9, 6), 100, new RatingMpa(1, EnumMPA.G), genres);
+        Film updated = new Film(1L, "update", "test1", LocalDate.of(1994, 9, 6), 100, new RatingMpa(1, EnumMPA.G), null);
         filmStorage.update(updated);
         Film afterUpdate = filmStorage.findFilmById(1L);
         assertThat(afterUpdate).isEqualTo(updated);
-        assertThat(afterUpdate.getGenres().get(0)).isEqualTo(new Genre(3, "Мультфильм"));
         assertThat(afterUpdate.getName()).isEqualTo("update");
     }
 
