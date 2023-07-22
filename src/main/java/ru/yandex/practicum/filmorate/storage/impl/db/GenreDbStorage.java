@@ -32,6 +32,7 @@ public class GenreDbStorage implements GenreStorage {
         return jdbcOperations.query(sqlQuery, map, new GenreRowMapper());
     }
 
+
     @Override
     public Genre findGenreById(int genreId) {
         String sqlQuery = "select * from \"genre\" where genre_id = :genre_id";
@@ -45,6 +46,17 @@ public class GenreDbStorage implements GenreStorage {
         } else {
             return genre.get(0);
         }
+    }
+
+    @Override
+    public List<Genre> findGenreByIds(List<Integer> genreIds) {
+        String sqlQuery = "select * from \"genre\" where genre_id in (:genreIds)  ";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("genreIds", genreIds);
+
+        return jdbcOperations.query(sqlQuery, map, new GenreRowMapper());
     }
 
     static class GenreRowMapper implements RowMapper<Genre> {

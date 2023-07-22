@@ -6,15 +6,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmLikeStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,12 +22,17 @@ public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final FilmLikeStorage filmLikeStorage;
+    private final FilmGenreStorage filmGenreStorage;
+    private final GenreStorage genreStorage;
+
 
     @Autowired
-    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, FilmLikeStorage filmLikeStorage) {
+    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, FilmLikeStorage filmLikeStorage, FilmGenreStorage filmGenreStorage, GenreStorage genreStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.filmLikeStorage = filmLikeStorage;
+        this.filmGenreStorage = filmGenreStorage;
+        this.genreStorage = genreStorage;
     }
 
     @Override
@@ -69,11 +73,14 @@ public class FilmServiceImpl implements FilmService {
                 return whoLikeFilm1.size() - whoLikeFilm2.size();
             }
         };
-        return filmStorage.findAll().stream()
+        List<Film> filmList = filmStorage.findAll().stream()
                 .sorted(comparator)
                 .limit(count)
                 .collect(Collectors.toList());
+        enrichFilmGenres(filmList);
+        return filmList;
     }
+
 
     @Override
     public Film saveFilm(Film film) {
@@ -87,20 +94,52 @@ public class FilmServiceImpl implements FilmService {
             log.error("Фильм не найден");
             throw new NotFoundException();
         }
+        enrichFilmGenres(List.of(update));
         return update;
     }
 
     @Override
     public List<Film> getAllFilms() {
-        return filmStorage.findAll();
+        List<Film> filmList = filmStorage.findAll();
+        enrichFilmGenres(filmList);
+        return filmList;
     }
 
     @Override
     public Film findFilmById(Long filmId) {
-        if (Objects.nonNull(filmStorage.findFilmById(filmId))) {
-            return filmStorage.findFilmById(filmId);
+        Film filmById = filmStorage.findFilmById(filmId);
+        if (Objects.nonNull(filmById)) {
+            enrichFilmGenres(List.of(filmById));
+            return filmById;
         } else {
             throw new NotFoundException();
         }
+    }
+
+    private void enrichFilmGenres(List<Film> filmList) {
+        List<Long> filmIds = filmList.stream()
+                .map(Film::getId)
+                .collect(Collectors.toList());
+        List<FilmGenre> filmGenreList = filmGenreStorage.findFilmGenreByFilmIds(filmIds);
+        List<Integer> genreIds = filmGenreList.stream()
+                .map(FilmGenre::getGenreId)
+                .collect(Collectors.toList());
+        List<Genre> genres = genreStorage.findGenreByIds(genreIds);
+        Map<Integer, Genre> genreMap = genres.stream()
+                .collect(Collectors.toMap(Genre::getId, Function.identity()));
+        Map<Long, List<Integer>> filmIdGenreIdsMap = new HashMap<>();
+        filmGenreList.forEach(filmGenre -> {
+            if (!filmIdGenreIdsMap.containsKey(filmGenre.getFilmId())) {
+                filmIdGenreIdsMap.put(filmGenre.getFilmId(), filmGenreList.stream()
+                        .filter(filmGenre1 -> filmGenre1.getFilmId().equals(filmGenre.getFilmId()))
+                        .map(FilmGenre::getGenreId)
+                        .collect(Collectors.toList()));
+            }
+        });
+        filmList.forEach(film -> {
+            List<Genre> genreList = new ArrayList<>();
+            filmIdGenreIdsMap.getOrDefault(film.getId(), new ArrayList<>()).forEach(genreId -> genreList.add(genreMap.get(genreId)));
+            film.setGenres(genreList);
+        });
     }
 }
