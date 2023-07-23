@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum EnumMPA {
     G("G"),
     PG("PG"),
@@ -13,6 +15,7 @@ public enum EnumMPA {
         this.name = name;
     }
 
+    @JsonValue
     public String getName() {
         return name;
     }

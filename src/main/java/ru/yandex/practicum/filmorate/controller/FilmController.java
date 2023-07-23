@@ -4,9 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -24,9 +22,9 @@ public class FilmController {
     }
 
     @GetMapping()
-    public List<FilmDto> findAll() {
+    public List<Film> findAll() {
         List<Film> allFilms = filmService.getAllFilms();
-        return FilmMapper.map(allFilms);
+        return allFilms;
     }
 
     @PostMapping()
@@ -44,17 +42,17 @@ public class FilmController {
     }
 
     @GetMapping("{filmId}")
-    public FilmDto findFilm(@PathVariable("filmId") Long filmId) {
+    public Film findFilm(@PathVariable("filmId") Long filmId) {
         Film film = filmService.findFilmById(filmId);
-        return FilmMapper.map(film);
+        return film;
     }
 
     @GetMapping("popular")
-    public List<FilmDto> findPopular(@RequestParam(defaultValue = "10") Integer count) {
+    public List<Film> findPopular(@RequestParam(defaultValue = "10") Integer count) {
         if (count <= 0) {
             throw new IncorrectParameterException("count");
         }
-        return FilmMapper.map(filmService.popularFilms(count));
+        return filmService.popularFilms(count);
     }
 
     @PutMapping("{filmId}/like/{userId}")

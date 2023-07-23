@@ -40,7 +40,6 @@ public class FilmDbStorage implements FilmStorage {
 
         jdbcOperations.update(sqlQuery, map, keyHolder);
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        //insertIntoFilmGenres(film);
         return film;
     }
 
