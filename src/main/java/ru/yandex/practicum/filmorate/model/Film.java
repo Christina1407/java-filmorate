@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validator.RealiseDateConstraints;
 
@@ -8,10 +9,10 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Data
+@AllArgsConstructor
 public class Film {
     private static final int MAX_LENGTH_DESCRIPTION = 200;
     private Long id;
@@ -25,14 +26,6 @@ public class Film {
     @NotNull(message = "duration is null")
     @Positive(message = "duration is not positive")
     private final Integer duration;
-
-    Set<Long> whoLikeId = new HashSet<>();
-
-    public Boolean addLIke(Long userId) {
-        return whoLikeId.add(userId);
-    }
-
-    public Boolean deleteLike(Long userId) {
-        return whoLikeId.remove(userId);
-    }
+    private final RatingMpa mpa;
+    private List<Genre> genres;
 }

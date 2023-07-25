@@ -23,7 +23,8 @@ public class FilmController {
 
     @GetMapping()
     public List<Film> findAll() {
-        return filmService.getAllFilms();
+        List<Film> allFilms = filmService.getAllFilms();
+        return allFilms;
     }
 
     @PostMapping()
@@ -42,7 +43,8 @@ public class FilmController {
 
     @GetMapping("{filmId}")
     public Film findFilm(@PathVariable("filmId") Long filmId) {
-        return filmService.findFilmById(filmId);
+        Film film = filmService.findFilmById(filmId);
+        return film;
     }
 
     @GetMapping("popular")

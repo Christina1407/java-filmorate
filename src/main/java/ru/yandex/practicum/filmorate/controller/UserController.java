@@ -49,8 +49,9 @@ public class UserController {
     public void addFriend(@PathVariable("userId") Long userId,
                           @PathVariable("friendId") Long friendId) {
         userService.addFriend(userId, friendId);
-        log.info("Пользователь id = " + userId + " и пользователь id = " + friendId + " теперь друзья");
+        log.info("Пользователь id = " + userId + " добавил в друзья пользователя id = " + friendId);
     }
+
 
     @DeleteMapping("{userId}/friends/{friendId}")
     public void deleteFriend(@PathVariable("userId") Long userId,
