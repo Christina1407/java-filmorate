@@ -4,11 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.*;
 
@@ -24,15 +22,17 @@ public class FilmServiceImpl implements FilmService {
     private final FilmLikeStorage filmLikeStorage;
     private final FilmGenreStorage filmGenreStorage;
     private final GenreStorage genreStorage;
+    private final RatingStorage ratingStorage;
 
 
     @Autowired
-    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, FilmLikeStorage filmLikeStorage, FilmGenreStorage filmGenreStorage, GenreStorage genreStorage) {
+    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, FilmLikeStorage filmLikeStorage, FilmGenreStorage filmGenreStorage, GenreStorage genreStorage, RatingStorage ratingStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.filmLikeStorage = filmLikeStorage;
         this.filmGenreStorage = filmGenreStorage;
         this.genreStorage = genreStorage;
+        this.ratingStorage = ratingStorage;
     }
 
     @Override
@@ -84,13 +84,44 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film saveFilm(Film film) {
+        validateGenresAndMPA(film);
         Film save = filmStorage.save(film);
         filmGenreStorage.insertIntoFilmGenres(save);
         return save;
     }
 
+    //Проверка, что пришедшие айдишники жанров и рейтинга есть в базе
+    private void validateGenresAndMPA(Film film) {
+        List<Integer> genreIds = new ArrayList<>();
+        if (Objects.nonNull(film.getGenres())) {
+            genreIds = film.getGenres().stream().map(Genre::getId).collect(Collectors.toList());
+        }
+        List<Integer> genreExistedIds = genreStorage.findAll().stream().map(Genre::getId).collect(Collectors.toList());
+        genreIds.removeAll(genreExistedIds);
+        Integer mpaId = null;
+        if (Objects.nonNull(film.getMpa())) {
+            mpaId = film.getMpa().getId();
+        }
+        List<Integer> mpaExistedIds = ratingStorage.findAll().stream().map(RatingMpa::getId).collect(Collectors.toList());
+        if (!genreIds.isEmpty()) {
+            if (Objects.nonNull(mpaId) && !mpaExistedIds.contains(mpaId)) {
+                log.error("Не найдены жанры: {} ", genreIds);
+                log.error("Не найден рейтинг id: {} ", mpaId);
+                throw new IncorrectParameterException("genres " + genreIds + ", mpa " + mpaId);
+            }
+            log.error("Не найдены жанры: {} ", genreIds);
+            throw new IncorrectParameterException("genres " + genreIds);
+        }
+        if (Objects.nonNull(mpaId) && !mpaExistedIds.contains(mpaId)) {
+            log.error("Не найден рейтинг id: {} ", mpaId);
+            throw new IncorrectParameterException("mpa " + mpaId);
+        }
+    }
+
+
     @Override
     public Film updateFilm(Film film) {
+        validateGenresAndMPA(film);
         Film update = filmStorage.update(film);
         if (Objects.isNull(update)) {
             log.error("Фильм не найден");

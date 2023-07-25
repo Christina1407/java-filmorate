@@ -54,7 +54,11 @@ public class FilmDbStorage implements FilmStorage {
         map.addValue("description", film.getDescription());
         map.addValue("release_date", film.getReleaseDate());
         map.addValue("duration", film.getDuration());
-        map.addValue("rating_id", film.getMpa().getId());
+        if (Objects.nonNull(film.getMpa())) {
+            map.addValue("rating_id", film.getMpa().getId());
+        } else {
+            map.addValue("rating_id", null);
+        }
 
         jdbcOperations.update(sqlQuery, map, keyHolder);
         if (Objects.isNull(keyHolder.getKey())) {
@@ -75,7 +79,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film findFilmById(Long filmId) {
-        String sqlQuery = "select f.*, r.name as rating_mpa_name from \"film\" as f join \"rating_mpa\" as r on f.rating_id = r.rating_id" +
+        String sqlQuery = "select f.*, r.name as rating_mpa_name from \"film\" as f left join \"rating_mpa\" as r on f.rating_id = r.rating_id" +
                 " where film_id = :film_id";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -92,13 +96,17 @@ public class FilmDbStorage implements FilmStorage {
     private static class FilmRowMapper implements RowMapper<Film> {
         @Override
         public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+            RatingMpa ratingMpa = null;
+            if (Objects.nonNull(rs.getString("rating_mpa_name"))) {
+                ratingMpa = new RatingMpa(rs.getInt("rating_id"), EnumMPA.valueOf(rs.getString("rating_mpa_name")));
+            }
             return new Film(
                     rs.getLong("film_id"),
                     rs.getString("name"),
                     rs.getString("description"),
                     rs.getDate("release_date").toLocalDate(),
                     rs.getInt("duration"),
-                    new RatingMpa(rs.getInt("rating_id"), EnumMPA.valueOf(rs.getString("rating_mpa_name"))),
+                    ratingMpa,
                     null
             );
         }
