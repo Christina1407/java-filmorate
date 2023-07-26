@@ -30,6 +30,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public void delete(Long userId) {
+
+    }
+
+    @Override
     public User update(User user) {
         if (Objects.nonNull(user.getId())) {
             if (!users.containsKey(user.getId())) {

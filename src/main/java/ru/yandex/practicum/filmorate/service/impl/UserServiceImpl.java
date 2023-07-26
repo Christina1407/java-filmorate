@@ -104,6 +104,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteUser(Long userId) {
+        User user = userStorage.findUserById(userId);
+        if (Objects.isNull(user)) {
+            log.error("Пользователь для удаления не найден id = {}", userId);
+            throw new NotFoundException();
+        }
+        userStorage.delete(userId);
+    }
+
+    @Override
     public User updateUser(User user) {
         User updateUser = userStorage.update(user);
         if (Objects.isNull(updateUser)) {

@@ -33,6 +33,12 @@ public class UserController {
         return savedUser;
     }
 
+    @DeleteMapping("{userId}")
+    public void deleteUser(@PathVariable("userId") Long userId) {
+        userService.deleteUser(userId);
+        log.info("Пользователь id = : " + userId + " удалён ");
+    }
+
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         User updateUser = userService.updateUser(user);
@@ -70,4 +76,6 @@ public class UserController {
                                         @PathVariable("otherId") Long otherId) {
         return userService.findMutualFriends(userId, otherId);
     }
+
+
 }

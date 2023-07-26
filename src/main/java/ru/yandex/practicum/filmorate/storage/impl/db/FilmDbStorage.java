@@ -44,6 +44,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(Long filmId) {
+        String sqlQuery = "delete from \"film\" where film_id = :film_id";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("film_id", filmId);
+
+        jdbcOperations.update(sqlQuery, map, keyHolder);
+    }
+
+    @Override
     public Film update(Film film) {
         String sqlQuery = "update \"film\" set name = :name, description = :description, release_date = " +
                 ":release_date, duration = :duration, rating_id = :rating_id where film_id = :film_id";
@@ -107,6 +118,7 @@ public class FilmDbStorage implements FilmStorage {
                     rs.getDate("release_date").toLocalDate(),
                     rs.getInt("duration"),
                     ratingMpa,
+                    null,
                     null
             );
         }

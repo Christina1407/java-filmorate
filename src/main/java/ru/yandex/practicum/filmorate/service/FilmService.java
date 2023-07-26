@@ -13,6 +13,8 @@ public interface FilmService {
 
     Film saveFilm(Film film);
 
+    void deleteFilm(Long filmId);
+
     Film updateFilm(Film film);
 
     List<Film> getAllFilms();

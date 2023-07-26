@@ -41,6 +41,17 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public void delete(Long userId) {
+        String sqlQuery = "delete from \"user\" where user_id = :user_id";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("user_id", userId);
+
+        jdbcOperations.update(sqlQuery, map, keyHolder);
+    }
+
+    @Override
     public User update(User user) {
         String sqlQuery = "update \"user\" set email = :email, login = :login, name = :name, birthday = :birthday " +
                 "where user_id = :user_id ";

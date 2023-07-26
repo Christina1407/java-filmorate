@@ -22,6 +22,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(Long filmId) {
+
+    }
+
+    @Override
     public Film update(Film film) {
         if (Objects.nonNull(film.getId())) {
             if (!films.containsKey(film.getId())) {

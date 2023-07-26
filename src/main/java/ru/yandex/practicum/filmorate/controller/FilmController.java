@@ -34,6 +34,12 @@ public class FilmController {
         return savedFilm;
     }
 
+    @DeleteMapping("{filmId}")
+    public void deleteUser(@PathVariable("filmId") Long filmId) {
+        filmService.deleteFilm(filmId);
+        log.info("Фильм id = : " + filmId + " удалён ");
+    }
+
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         Film updateFilm = filmService.updateFilm(film);
@@ -54,6 +60,16 @@ public class FilmController {
         }
         return filmService.popularFilms(count);
     }
+
+    //Функциональность "Популярные фильмы", которая предусматривает вывод самых любимых у зрителей фильмов по жанрам и годам
+//    @GetMapping("popular/{year}/{genre}")
+//    public List<Film> findPopularYearAndGenre(@PathVariable("year") Integer year,
+//                                              @PathVariable("genre") String genre) {
+//        if (count <= 0) {
+//            throw new IncorrectParameterException("count");
+//        }
+//        return filmService.popularFilms(count);
+//    }
 
     @PutMapping("{filmId}/like/{userId}")
     public void addLike(@PathVariable("filmId") Long filmId,

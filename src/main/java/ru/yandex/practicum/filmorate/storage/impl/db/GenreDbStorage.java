@@ -49,7 +49,7 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public List<Genre> findGenreByIds(List<Integer> genreIds) {
+    public List<Genre> findGenresByIds(List<Integer> genreIds) {
         String sqlQuery = "select * from \"genre\" where genre_id in (:genreIds)  ";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();

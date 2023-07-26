@@ -28,4 +28,5 @@ public class Film {
     private final Integer duration;
     private final RatingMpa mpa;
     private List<Genre> genres;
+    private List<Director> directors;
 }

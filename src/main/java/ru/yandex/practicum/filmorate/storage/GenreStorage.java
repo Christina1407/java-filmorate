@@ -10,5 +10,5 @@ public interface GenreStorage {
 
     Genre findGenreById(int genreId);
 
-    List<Genre> findGenreByIds(List<Integer> genreIds);
+    List<Genre> findGenresByIds(List<Integer> genreIds);
 }
