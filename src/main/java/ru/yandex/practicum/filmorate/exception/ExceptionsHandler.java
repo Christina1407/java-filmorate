@@ -8,15 +8,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.controller.*;
-import ru.yandex.practicum.filmorate.service.DirectorService;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.UserService;
 
+import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, DirectorController.class, FilmService.class, UserService.class, RatingMPAController.class, GenreController.class, DirectorService.class})
+@RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, DirectorController.class, ReviewController.class, RatingMPAController.class, GenreController.class})
 public class ExceptionsHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -54,6 +52,10 @@ public class ExceptionsHandler {
         return new ExceptionResponse("Непредвиденная ошибка");
     }
 
-
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse handleException(final ConstraintViolationException e) {
+        return new ExceptionResponse("Некорректные параметры запроса");
+    }
 }
 

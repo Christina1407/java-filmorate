@@ -2,13 +2,18 @@
 
 Приложение, которое умеет обрабатывать и хранить данные о пользователях и их любимых фильмах.
 
-Пользователи могут:
+Функциональность приложения:
 
-- Ставить лайки фильмам
-- Писать отзывы
-- Искать наиболее популярные по количеству лайков фильмы
-- Искать фильмы по режиссёру
-- Добавлять других пользователей в друзья
+- Лайки фильмам
+- Наиболее популярные по количеству лайков фильмы по жанрам и годам
+- Фильмы определённого режиссёра
+- Добавление других пользователей в друзья
+- Отзывы на фильмы, отсортированные по полезности
+- Лайки и дизлайки отзывам
+- Поиск фильмов
+- Общие фильмы
+- Рекомендации
+- Лента событий
 
 ## Database structure
 
@@ -68,7 +73,7 @@ film_id bigint
 director_id bigint
 }
 Table director {
-director_id int [primary key]
+director_id bigint [primary key]
 name varchar
 }
 
@@ -77,13 +82,13 @@ review_id bigint [primary key]
 film_id bigint 
 user_id bigint 
 content varchar
-creation_date date
 is_postive boolean
 }
 Table review_like {
 review_like_id bigint [primary key]
 review_id bigint
-is_like boolean
+user_id bigint
+like_dislike int
 }
 
 Table feed{
@@ -110,6 +115,7 @@ Ref: user.user_id < review.user_id // one-to-many
 Ref: film.film_id < review.film_id // one-to-many
 Ref: review.review_id < review_like.review_id // one-to-many
 Ref: user.user_id < feed.user_id // one-to-many
+Ref: user.user_id < review_like.user_id // one-to-many
 ````
 
 ## Примеры запросов
@@ -172,13 +178,9 @@ VALUES (?, ?, ?, ?, ?)
 фильм айди
 юзер айди
 контент
-время публикации
 положительный/отрицательный boolean isPositive
-лайки/дизлайки ReviewLike
-
-Models:
-Review
-ReviewLike
+useful - количество лайков минус количество дизлайков. По этому полю сортируется от большего к меньшему
+лайки/дизлайки таблица review_like(review_like_id , review_id bigint , user_id bigint, like = 1, dislike = -1)
 
 Лента событий Feed
 айди
@@ -193,4 +195,6 @@ Models:
 Director
 FilmDirector
 
+Рекомендации фильмов
+фильмы, лайкнутые друзьями, за исключением лайкнутых пользователем?
  

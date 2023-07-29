@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.EnumSortBy;
 
 import java.util.List;
 
@@ -9,7 +10,7 @@ public interface FilmService {
 
     void deleteLike(Long filmId, Long userId);
 
-    List<Film> popularFilms(Integer count);
+    List<Film> popularFilms(Integer count, Integer genreId, Integer year);
 
     Film saveFilm(Film film);
 
@@ -20,4 +21,6 @@ public interface FilmService {
     List<Film> getAllFilms();
 
     Film findFilmById(Long filmId);
+
+    List<Film> findFilmsByDirectorId(Long directorId, EnumSortBy sortBy);
 }

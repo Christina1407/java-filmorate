@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.model.enums.EnumMPA;
+import ru.yandex.practicum.filmorate.model.enums.EnumSortBy;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
@@ -102,6 +103,35 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             return films.get(0);
         }
+    }
+
+    @Override
+    public List<Film> findFilmsByDirector(Long directorId, EnumSortBy sortBy) {
+        String sqlQuery = null;
+        if (Objects.isNull(sortBy)) {
+            sqlQuery = "select f.*, r.name as rating_mpa_name from \"film\" as f left join \"film_director\" as fd on f.film_id = fd.film_id" +
+                    " left join \"rating_mpa\" as r on f.rating_id = r.rating_id where director_id = :director_id";
+        } else if (sortBy.equals(EnumSortBy.YEAR)) {
+            sqlQuery = "select f.*, r.name as rating_mpa_name " +
+                    "from \"film\"  as f left join \"film_director\" as fd on f.film_id = fd.film_id " +
+                    "left join \"rating_mpa\" as r on f.rating_id = r.rating_id " +
+                    "where director_id = :director_id " +
+                    "ORDER BY EXTRACT(YEAR FROM release_date)";
+        } else if (sortBy.equals(EnumSortBy.LIKES)) {
+            sqlQuery = "select f.*, r.name as rating_mpa_name " +
+                    "from \"film\"  as f  join \"film_director\" as fd on f.film_id = fd.film_id " +
+                    "left join \"rating_mpa\" as r on f.rating_id = r.rating_id " +
+                    "left join \"film_like\" as fl on f.film_id = fl.film_id " +
+                    "where director_id = :director_id " +
+                    "GROUP BY f.FILM_ID " +
+                    "ORDER BY COUNT(fl.USER_ID)  desc";
+        }
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("director_id", directorId);
+        List<Film> films = jdbcOperations.query(sqlQuery, map, new FilmRowMapper());
+        return films;
     }
 
     private static class FilmRowMapper implements RowMapper<Film> {

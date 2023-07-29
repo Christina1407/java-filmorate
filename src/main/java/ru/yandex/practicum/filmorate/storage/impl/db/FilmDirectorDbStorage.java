@@ -32,7 +32,13 @@ public class FilmDirectorDbStorage implements FilmDirectorStorage {
 
     @Override
     public List<FilmDirector> findFilmDirectorByFilmIds(List<Long> filmIds) {
-        return null;
+        String sqlQuery = "select * from \"film_director\" where film_id in (:filmIds)";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("filmIds", filmIds);
+
+        return jdbcOperations.query(sqlQuery, map, new FilmeDirectorRowMapper());
     }
 
     @Override
@@ -41,9 +47,9 @@ public class FilmDirectorDbStorage implements FilmDirectorStorage {
 
             List<Long> directorsIds = film.getDirectors().stream()
                     .map(Director::getId).distinct().collect(Collectors.toList());
-            String sqlQueryFilmGenre = "insert into \"film_directors\" (film_id, director_id) values (?, ?)";
+            String sqlQueryFilmDirector = "insert into \"film_director\" (film_id, director_id) values (?, ?)";
             jdbcTemplate.batchUpdate(
-                    sqlQueryFilmGenre,
+                    sqlQueryFilmDirector,
                     new BatchPreparedStatementSetter() {
                         public void setValues(PreparedStatement ps, int i) throws SQLException {
                             ps.setLong(1, film.getId());

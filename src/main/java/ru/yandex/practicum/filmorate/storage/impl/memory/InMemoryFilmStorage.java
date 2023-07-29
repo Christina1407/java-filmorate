@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.impl.memory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.EnumSortBy;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import javax.validation.ValidationException;
@@ -50,5 +51,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film findFilmById(Long filmId) {
         return films.get(filmId);
+    }
+
+    @Override
+    public List<Film> findFilmsByDirector(Long directorId, EnumSortBy sortBy) {
+        return null;
     }
 }

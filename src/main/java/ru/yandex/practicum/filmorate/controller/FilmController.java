@@ -5,10 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.EnumSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/films")
@@ -35,7 +37,7 @@ public class FilmController {
     }
 
     @DeleteMapping("{filmId}")
-    public void deleteUser(@PathVariable("filmId") Long filmId) {
+    public void deleteFilm(@PathVariable("filmId") Long filmId) {
         filmService.deleteFilm(filmId);
         log.info("Фильм id = : " + filmId + " удалён ");
     }
@@ -53,23 +55,32 @@ public class FilmController {
         return film;
     }
 
-    @GetMapping("popular")
-    public List<Film> findPopular(@RequestParam(defaultValue = "10") Integer count) {
-        if (count <= 0) {
-            throw new IncorrectParameterException("count");
+    @GetMapping("director/{directorId}")
+    public List<Film> findFilmsByDirectorId(@PathVariable("directorId") Long directorId,
+                                            @RequestParam(required = false) EnumSortBy sortBy) {
+        if (directorId <= 0) {
+            throw new IncorrectParameterException("directorId");
         }
-        return filmService.popularFilms(count);
+        return filmService.findFilmsByDirectorId(directorId, sortBy);
+
     }
 
     //Функциональность "Популярные фильмы", которая предусматривает вывод самых любимых у зрителей фильмов по жанрам и годам
-//    @GetMapping("popular/{year}/{genre}")
-//    public List<Film> findPopularYearAndGenre(@PathVariable("year") Integer year,
-//                                              @PathVariable("genre") String genre) {
-//        if (count <= 0) {
-//            throw new IncorrectParameterException("count");
-//        }
-//        return filmService.popularFilms(count);
-//    }
+    @GetMapping("popular")
+    public List<Film> findPopular(@RequestParam(defaultValue = "10") Integer count,
+                                  @RequestParam(required = false) Integer genreId,
+                                  @RequestParam(required = false) Integer year) {
+        if (count <= 0) {
+            throw new IncorrectParameterException("count");
+        }
+        if (Objects.nonNull(genreId) && genreId <= 0) {
+            throw new IncorrectParameterException("genreId");
+        }
+        if (Objects.nonNull(year) && year <= 0) {
+            throw new IncorrectParameterException("year");
+        }
+        return filmService.popularFilms(count, genreId, year);
+    }
 
     @PutMapping("{filmId}/like/{userId}")
     public void addLike(@PathVariable("filmId") Long filmId,
@@ -83,5 +94,12 @@ public class FilmController {
                            @PathVariable("userId") Long userId) {
         filmService.deleteLike(filmId, userId);
         log.info("Пользователь id = : " + userId + " удалил like фильму id = " + filmId);
+    }
+
+    @GetMapping("common")
+    public List<Film> findCommonFilms(@PathVariable("userId") Long userId,
+                                      @PathVariable("otherId") Long otherId) {
+        //TODO fix
+        return null;
     }
 }

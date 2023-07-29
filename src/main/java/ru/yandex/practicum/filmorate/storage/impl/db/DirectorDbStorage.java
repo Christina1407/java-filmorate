@@ -49,7 +49,7 @@ public class DirectorDbStorage implements DirectorStorage {
 
 
     @Override
-    public List<Director> findDirectorsByIds(List<Integer> directorsIds) {
+    public List<Director> findDirectorsByIds(List<Long> directorsIds) {
         String sqlQuery = "select * from \"director\" where director_id in (:directorsIds)  ";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -88,6 +88,17 @@ public class DirectorDbStorage implements DirectorStorage {
             return null;
         }
         return director;
+    }
+
+    @Override
+    public void delete(Long directorId) {
+        String sqlQuery = "delete from \"director\" where director_id = :director_id";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("director_id", directorId);
+
+        jdbcOperations.update(sqlQuery, map, keyHolder);
     }
 
     static class DirectorRowMapper implements RowMapper<Director> {

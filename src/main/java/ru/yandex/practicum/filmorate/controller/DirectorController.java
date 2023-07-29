@@ -34,13 +34,19 @@ public class DirectorController {
         return updateDirector;
     }
 
+    @DeleteMapping("{directorId}")
+    public void deleteDirector(@PathVariable("directorId") Long directorId) {
+        directorService.deleteDirector(directorId);
+        log.info("Режиссёр id = : " + directorId + " удалён ");
+    }
+
     @GetMapping()
     public List<Director> findAll() {
         return directorService.getAllDirectors();
     }
 
     @GetMapping("{directorId}")
-    public Director findDirector(@PathVariable("directorId") long directorId) {
+    public Director findDirectorById(@PathVariable("directorId") long directorId) {
         return directorService.findDirectorById(directorId);
     }
 }

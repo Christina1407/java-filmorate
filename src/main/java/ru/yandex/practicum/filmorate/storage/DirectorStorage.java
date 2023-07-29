@@ -9,10 +9,12 @@ public interface DirectorStorage {
 
     Director findDirectorById(Long directorId);
 
-    List<Director> findDirectorsByIds(List<Integer> directorsIds);
+    List<Director> findDirectorsByIds(List<Long> directorsIds);
 
     Director save(Director director);
 
     Director update(Director director);
+
+    void delete(Long directorId);
 }
 

@@ -105,22 +105,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
-        User user = userStorage.findUserById(userId);
-        if (Objects.isNull(user)) {
-            log.error("Пользователь для удаления не найден id = {}", userId);
-            throw new NotFoundException();
-        }
+        findUserById(userId);
         userStorage.delete(userId);
     }
 
     @Override
     public User updateUser(User user) {
-        User updateUser = userStorage.update(user);
-        if (Objects.isNull(updateUser)) {
-            log.error("Пользователь для обновления не найден");
-            throw new NotFoundException();
-        }
-        return updateUser;
+        findUserById(user.getId());
+        return userStorage.update(user);
     }
 
     @Override
@@ -133,6 +125,7 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(userStorage.findUserById(userId))) {
             return userStorage.findUserById(userId);
         } else {
+            log.error("Пользователь не найден id {} ", userId);
             throw new NotFoundException();
         }
     }

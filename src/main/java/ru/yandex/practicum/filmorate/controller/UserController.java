@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -69,6 +70,11 @@ public class UserController {
     @GetMapping("{userId}/friends")
     public List<User> findUsersFriends(@PathVariable("userId") Long userId) {
         return userService.findUsersFriends(userId);
+    }
+
+    @GetMapping("{userId}/recommendations")
+    public List<Film> findRecommendations(@PathVariable("userId") Long userId) {
+        return null; //TODO
     }
 
     @GetMapping("{userId}/friends/common/{otherId}")

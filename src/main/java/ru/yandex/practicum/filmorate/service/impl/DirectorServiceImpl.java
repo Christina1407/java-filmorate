@@ -41,11 +41,13 @@ public class DirectorServiceImpl implements DirectorService {
 
     @Override
     public Director updateDirector(Director director) {
-        Director updateDirector = directorStorage.update(director);
-        if (Objects.isNull(updateDirector)) {
-            log.error("Режиссёр для обновления не найден {} ", director);
-            throw new NotFoundException();
-        }
-        return updateDirector;
+        findDirectorById(director.getId());
+        return directorStorage.update(director);
+    }
+
+    @Override
+    public void deleteDirector(Long directorId) {
+        findDirectorById(directorId);
+        directorStorage.delete(directorId);
     }
 }
