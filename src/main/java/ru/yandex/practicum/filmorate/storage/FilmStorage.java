@@ -16,5 +16,7 @@ public interface FilmStorage {
 
     Film findFilmById(Long filmId);
 
+    List<Film> searchFilms(String query, List<String> searchByParams);
+
     List<Film> findFilmsByDirector(Long directorId, EnumSortBy sortBy);
 }

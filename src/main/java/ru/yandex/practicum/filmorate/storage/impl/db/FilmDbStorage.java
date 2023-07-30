@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -103,6 +104,30 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             return films.get(0);
         }
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, List<String> searchByParams) {
+        List<Film> films = new ArrayList<>();
+        if (searchByParams.contains("title") && searchByParams.contains("director")) {
+            films = searchFilmsByTitleAndDirector(query);
+        }
+        return films;
+    }
+
+    private List<Film> searchFilmsByTitleAndDirector(String query) {
+        String sqlQuery = "select f.*, r.name as rating_mpa_name from \"film\" as f " +
+                "left join \"film_director\" as fd on f.film_id = fd.film_id " +
+                "left join \"rating_mpa\" as r on f.rating_id = r.rating_id " +
+                "left join \"director\" as d on fd.director_id = d.director_id " +
+                "left join \"film_like\" as fl on f.film_id = fl.film_id " +
+                "where f.name ilike :query or d.name ilike :query " +
+                "GROUP BY f.FILM_ID " +
+                "ORDER BY COUNT(fl.USER_ID) desc";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("query", "%" + query + "%");
+        return jdbcOperations.query(sqlQuery, map, new FilmRowMapper());
     }
 
     @Override

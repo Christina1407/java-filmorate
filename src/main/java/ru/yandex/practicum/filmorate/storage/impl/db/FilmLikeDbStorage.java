@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.FilmLikeStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class FilmLikeDbStorage implements FilmLikeStorage {
@@ -48,17 +47,18 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
 
     @Override
     public List<Long> whoLikeFilm(Long filmId) {
-        String sqlQuery = "select * from \"film_like\" where film_id = :film_id";
+        String sqlQuery = "select user_id from \"film_like\" where film_id = :film_id";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("film_id", filmId);
 
+        return jdbcOperations.query(sqlQuery, map, (rs, rowNum) -> rs.getLong("user_id"));
 
-        List<FilmLike> filmLikeList = jdbcOperations.query(sqlQuery, map, new FilmLikeRowMapper());
-        return filmLikeList.stream()
-                .map(FilmLike::getUserId)
-                .collect(Collectors.toList());
+//        List<FilmLike> filmLikeList = jdbcOperations.query(sqlQuery, map, new FilmLikeRowMapper());
+//        return filmLikeList.stream()
+//                .map(FilmLike::getUserId)
+//                .collect(Collectors.toList());
     }
 
     private static class FilmLikeRowMapper implements RowMapper<FilmLike> {

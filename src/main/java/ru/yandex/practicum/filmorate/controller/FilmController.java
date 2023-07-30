@@ -102,4 +102,10 @@ public class FilmController {
         //TODO fix
         return null;
     }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam String query,
+                                  @RequestParam(name = "by", defaultValue = "title") List<String> searchByParams) {
+        return filmService.searchFilms(query, searchByParams);
+    }
 }

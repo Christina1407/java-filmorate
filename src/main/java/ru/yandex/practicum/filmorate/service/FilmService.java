@@ -23,4 +23,6 @@ public interface FilmService {
     Film findFilmById(Long filmId);
 
     List<Film> findFilmsByDirectorId(Long directorId, EnumSortBy sortBy);
+
+    List<Film> searchFilms(String query, List<String> searchByParams);
 }

@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.enums.EnumSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final UserService userService;
     private final FilmLikeStorage filmLikeStorage;
     private final FilmGenreStorage filmGenreStorage;
     private final GenreStorage genreStorage;
@@ -29,9 +31,10 @@ public class FilmServiceImpl implements FilmService {
 
 
     @Autowired
-    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, FilmLikeStorage filmLikeStorage, FilmGenreStorage filmGenreStorage, GenreStorage genreStorage, RatingStorage ratingStorage, FilmDirectorStorage filmDirectorStorage, DirectorStorage directorStorage) {
+    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, UserService userService, FilmLikeStorage filmLikeStorage, FilmGenreStorage filmGenreStorage, GenreStorage genreStorage, RatingStorage ratingStorage, FilmDirectorStorage filmDirectorStorage, DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.userService = userService;
         this.filmLikeStorage = filmLikeStorage;
         this.filmGenreStorage = filmGenreStorage;
         this.genreStorage = genreStorage;
@@ -40,24 +43,25 @@ public class FilmServiceImpl implements FilmService {
         this.directorStorage = directorStorage;
     }
 
+    //    ТЗ №10: каждый пользователь может поставить лайк фильму только один раз
     @Override
     public void addLike(Long filmId, Long userId) {
-        Film film = filmStorage.findFilmById(filmId);
-        User user = userStorage.findUserById(userId);
-        if (Objects.nonNull(film) && Objects.nonNull(user)) {
+        findFilmById(filmId);
+        userService.findUserById(userId);
+        if (!filmLikeStorage.whoLikeFilm(filmId).contains(userId)) { //добавляем лайк, если айдишника юзера нет в списке лайкнувших фильм,
+            // ошибки при повторном добавлении не должно быть
             filmLikeStorage.addLike(userId, filmId);
-        } else {
-            throw new NotFoundException();
         }
     }
 
     @Override
     public void deleteLike(Long filmId, Long userId) {
-        Film film = filmStorage.findFilmById(filmId);
-        User user = userStorage.findUserById(userId);
-        if (Objects.nonNull(film) && Objects.nonNull(user)) {
+        findFilmById(filmId);
+        userService.findUserById(userId);
+        if (filmLikeStorage.whoLikeFilm(filmId).contains(userId)) {//удаляем лайк, если айдишник юзера есть в списке лайкнувших фильм
             filmLikeStorage.deleteLike(userId, filmId);
         } else {
+            log.error("Лайк юзера userId = " + userId + " фильму filmId = " + filmId + " не найден");
             throw new NotFoundException();
         }
     }
@@ -100,7 +104,6 @@ public class FilmServiceImpl implements FilmService {
         enrichFilmDirectors(filmList);
         return filmList;
     }
-
 
     @Override
     public Film saveFilm(Film film) {
@@ -167,6 +170,15 @@ public class FilmServiceImpl implements FilmService {
         return films;
 
     }
+
+    @Override
+    public List<Film> searchFilms(String query, List<String> searchByParams) {
+        List<Film> films = filmStorage.searchFilms(query, searchByParams);
+        enrichFilmGenres(films);
+        enrichFilmDirectors(films);
+        return films;
+    }
+
 
     private void enrichFilmGenres(List<Film> filmList) {
         List<Long> filmIds = filmList.stream()

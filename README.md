@@ -42,8 +42,8 @@ film_id bigint [primary key]
 name varchar
 description varchar
 release_date date
-duration int  
-rating_id int
+duration smallint  
+rating_id tinyint
 }
 
 Table genre {
@@ -88,7 +88,7 @@ Table review_like {
 review_like_id bigint [primary key]
 review_id bigint
 user_id bigint
-like_dislike int
+like_dislike tinyint
 }
 
 Table feed{
@@ -96,8 +96,8 @@ feed_id bigint [primary key]
 event_id int 
 user_id bigint
 entity_id int
-event_type enum ('FRIEND')
-operation enum ('ADD')
+event_type enum ('FRIEND', 'REVIEW', 'LIKE')
+operation enum ('ADD', 'REMOVE', 'UPDATE')
 time timestamp 
 }
 

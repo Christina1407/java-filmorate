@@ -7,6 +7,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 
+import java.util.List;
+
 @Repository
 public class ReviewLikeDbStorage implements ReviewLikeStorage {
     private static final int LIKE = 1;
@@ -36,17 +38,13 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
 
     @Override
     public void deleteLikeDislike(Long reviewId, Long userId, boolean isLike) {
-        String sqlQuery = "delete from \"review_like\" (review_id, user_id, like_dislike) values (:review_id, :user_id, :like_dislike)";
+        String sqlQuery = "delete from \"review_like\" where user_id = :user_id and review_id = :review_id";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("review_id", reviewId);
         map.addValue("user_id", userId);
-        if (isLike) {
-            map.addValue("like_dislike", LIKE);
-        } else {
-            map.addValue("like_dislike", DISLIKE);
-        }
+
         jdbcOperations.update(sqlQuery, map, keyHolder);
     }
 
@@ -58,4 +56,27 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
         map.addValue("review_id", reviewId);
         return jdbcOperations.queryForObject(sqlQuery, map, Integer.class);
     }
+
+    @Override
+    public List<Long> whoLikeReview(Long reviewId) {
+        String sqlQuery = "select user_id from \"review_like\" where review_id = :review_id and like_dislike = :LIKE";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("review_id", reviewId);
+        map.addValue("LIKE", LIKE);
+        return jdbcOperations.query(sqlQuery, map, (rs, rowNum) -> rs.getLong("user_id"));
+    }
+
+    @Override
+    public List<Long> whoDislikeReview(Long reviewId) {
+        String sqlQuery = "select user_id from \"review_like\" where review_id = :review_id and like_dislike = :DISLIKE";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("review_id", reviewId);
+        map.addValue("DISLIKE", DISLIKE);
+        return jdbcOperations.query(sqlQuery, map, (rs, rowNum) -> rs.getLong("user_id"));
+    }
+
 }
