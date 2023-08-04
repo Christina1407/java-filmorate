@@ -7,14 +7,17 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.yandex.practicum.filmorate.controller.*;
+import ru.yandex.practicum.filmorate.model.enums.converter.StringToEnumConverter;
 
 import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, DirectorController.class, ReviewController.class, RatingMPAController.class, GenreController.class})
+@RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, DirectorController.class,
+        ReviewController.class, RatingMPAController.class, GenreController.class, StringToEnumConverter.class})
 public class ExceptionsHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -52,9 +55,9 @@ public class ExceptionsHandler {
         return new ExceptionResponse("Непредвиденная ошибка");
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentTypeMismatchException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ExceptionResponse handleException(final ConstraintViolationException e) {
+    public ExceptionResponse handleBadRequestException(final Exception e) {
         return new ExceptionResponse("Некорректные параметры запроса");
     }
 }

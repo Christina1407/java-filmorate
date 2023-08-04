@@ -3,13 +3,18 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EnumEventType;
+import ru.yandex.practicum.filmorate.model.enums.EnumOperation;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -23,13 +28,15 @@ public class ReviewServiceImpl implements ReviewService {
     private final UserService userService;
     private final FilmService filmService;
     private final ReviewLikeStorage reviewLikeStorage;
+    private final FeedStorage feedStorage;
 
 
-    public ReviewServiceImpl(ReviewStorage reviewStorage, UserService userService, FilmService filmService, ReviewLikeStorage reviewLikeStorage) {
+    public ReviewServiceImpl(ReviewStorage reviewStorage, UserService userService, FilmService filmService, ReviewLikeStorage reviewLikeStorage, FeedStorage feedStorage) {
         this.reviewStorage = reviewStorage;
         this.userService = userService;
         this.filmService = filmService;
         this.reviewLikeStorage = reviewLikeStorage;
+        this.feedStorage = feedStorage;
     }
 
     @Override
@@ -68,7 +75,18 @@ public class ReviewServiceImpl implements ReviewService {
         userService.findUserById(review.getUserId());
         filmService.findFilmById(review.getFilmId());
         enrichReviewsByUseful(review);
-        return reviewStorage.saveReview(review);
+
+        Review newReview = reviewStorage.saveReview(review);
+        feedStorage.save(Feed.builder()
+                .userId(review.getUserId())
+                .entityId(newReview.getReviewId())
+                .eventType(EnumEventType.REVIEW)
+                .operation(EnumOperation.ADD)
+                .timestamp(Instant.now().toEpochMilli())
+                .build());
+        return newReview;
+
+
     }
 
     @Override
@@ -78,13 +96,30 @@ public class ReviewServiceImpl implements ReviewService {
 //        userService.findUserById(review.getUserId());
 //        filmService.findFilmById(review.getFilmId());
         enrichReviewsByUseful(review);
-        return reviewStorage.updateReview(review);
+
+        Review updateReview = reviewStorage.updateReview(review);
+        feedStorage.save(Feed.builder()
+                .userId(updateReview.getUserId())
+                .entityId(updateReview.getReviewId())
+                .eventType(EnumEventType.REVIEW)
+                .operation(EnumOperation.UPDATE)
+                .timestamp(Instant.now().toEpochMilli())
+                .build());
+        return updateReview;
     }
 
     @Override
     public void deleteReview(Long reviewId) {
-        findReviewById(reviewId);
+        Review reviewById = findReviewById(reviewId);
+        feedStorage.save(Feed.builder()
+                .userId(reviewById.getUserId())
+                .entityId(reviewId)
+                .eventType(EnumEventType.REVIEW)
+                .operation(EnumOperation.REMOVE)
+                .timestamp(Instant.now().toEpochMilli())
+                .build());
         reviewStorage.deleteReview(reviewId);
+
 
     }
 
@@ -117,7 +152,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public void addLikeDislike(Long reviewId, Long userId, Boolean isLike) {
-        findReviewById(reviewId);
+        Review reviewById = findReviewById(reviewId);
         userService.findUserById(userId);
         List<Long> whoLikeReview = reviewLikeStorage.whoLikeReview(reviewId);
         List<Long> whoDislikeReview = reviewLikeStorage.whoDislikeReview(reviewId);

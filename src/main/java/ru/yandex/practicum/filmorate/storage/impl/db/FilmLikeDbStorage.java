@@ -46,7 +46,7 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
     }
 
     @Override
-    public List<Long> whoLikeFilm(Long filmId) {
+    public List<Long> usersIdsWhoLikeFilm(Long filmId) { //Лист userId
         String sqlQuery = "select user_id from \"film_like\" where film_id = :film_id";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -60,6 +60,33 @@ public class FilmLikeDbStorage implements FilmLikeStorage {
 //                .map(FilmLike::getUserId)
 //                .collect(Collectors.toList());
     }
+
+    @Override
+    public List<FilmLike> userFilmLike(Long userId) {
+
+        String sqlQuery = "select * from \"film_like\" where user_id = :user_id";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("user_id", userId);
+
+        return jdbcOperations.query(sqlQuery, map, new FilmLikeRowMapper());
+    }
+
+    @Override
+    public List<FilmLike> filmLikesUsersWithCommonLike(Long userId) {
+
+        String sqlQuery = "select * from \"film_like\" where user_id != :user_id and user_id in " +
+                "(select user_id from \"film_like\" where film_id " +
+                "in (select film_id from \"film_like\" where user_id = :user_id))";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("user_id", userId);
+
+        return jdbcOperations.query(sqlQuery, map, new FilmLikeRowMapper());
+    }
+
 
     private static class FilmLikeRowMapper implements RowMapper<FilmLike> {
         @Override

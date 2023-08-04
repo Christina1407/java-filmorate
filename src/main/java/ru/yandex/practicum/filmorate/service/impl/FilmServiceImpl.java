@@ -7,11 +7,14 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.EnumEventType;
+import ru.yandex.practicum.filmorate.model.enums.EnumOperation;
 import ru.yandex.practicum.filmorate.model.enums.EnumSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.*;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -28,10 +31,11 @@ public class FilmServiceImpl implements FilmService {
     private final RatingStorage ratingStorage;
     private final FilmDirectorStorage filmDirectorStorage;
     private final DirectorStorage directorStorage;
+    private final FeedStorage feedStorage;
 
 
     @Autowired
-    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, UserService userService, FilmLikeStorage filmLikeStorage, FilmGenreStorage filmGenreStorage, GenreStorage genreStorage, RatingStorage ratingStorage, FilmDirectorStorage filmDirectorStorage, DirectorStorage directorStorage) {
+    public FilmServiceImpl(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, UserService userService, FilmLikeStorage filmLikeStorage, FilmGenreStorage filmGenreStorage, GenreStorage genreStorage, RatingStorage ratingStorage, FilmDirectorStorage filmDirectorStorage, DirectorStorage directorStorage, FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.userService = userService;
@@ -41,6 +45,7 @@ public class FilmServiceImpl implements FilmService {
         this.ratingStorage = ratingStorage;
         this.filmDirectorStorage = filmDirectorStorage;
         this.directorStorage = directorStorage;
+        this.feedStorage = feedStorage;
     }
 
     //    ТЗ №10: каждый пользователь может поставить лайк фильму только один раз
@@ -48,9 +53,16 @@ public class FilmServiceImpl implements FilmService {
     public void addLike(Long filmId, Long userId) {
         findFilmById(filmId);
         userService.findUserById(userId);
-        if (!filmLikeStorage.whoLikeFilm(filmId).contains(userId)) { //добавляем лайк, если айдишника юзера нет в списке лайкнувших фильм,
+        if (!filmLikeStorage.usersIdsWhoLikeFilm(filmId).contains(userId)) { //добавляем лайк, если айдишника юзера нет в списке лайкнувших фильм,
             // ошибки при повторном добавлении не должно быть
             filmLikeStorage.addLike(userId, filmId);
+            feedStorage.save(Feed.builder()
+                    .userId(userId)
+                    .entityId(filmId)
+                    .eventType(EnumEventType.LIKE)
+                    .operation(EnumOperation.ADD)
+                    .timestamp(Instant.now().toEpochMilli())
+                    .build());
         }
     }
 
@@ -58,8 +70,15 @@ public class FilmServiceImpl implements FilmService {
     public void deleteLike(Long filmId, Long userId) {
         findFilmById(filmId);
         userService.findUserById(userId);
-        if (filmLikeStorage.whoLikeFilm(filmId).contains(userId)) {//удаляем лайк, если айдишник юзера есть в списке лайкнувших фильм
+        if (filmLikeStorage.usersIdsWhoLikeFilm(filmId).contains(userId)) {//удаляем лайк, если айдишник юзера есть в списке лайкнувших фильм
             filmLikeStorage.deleteLike(userId, filmId);
+            feedStorage.save(Feed.builder()
+                    .userId(userId)
+                    .entityId(filmId)
+                    .eventType(EnumEventType.LIKE)
+                    .operation(EnumOperation.REMOVE)
+                    .timestamp(Instant.now().toEpochMilli())
+                    .build());
         } else {
             log.error("Лайк юзера userId = " + userId + " фильму filmId = " + filmId + " не найден");
             throw new NotFoundException();
@@ -69,8 +88,8 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public List<Film> popularFilms(Integer count, Integer genreId, Integer year) {
         Comparator<Film> comparator = (film1, film2) -> {
-            List<Long> whoLikeFilm1 = filmLikeStorage.whoLikeFilm(film1.getId());
-            List<Long> whoLikeFilm2 = filmLikeStorage.whoLikeFilm(film2.getId());
+            List<Long> whoLikeFilm1 = filmLikeStorage.usersIdsWhoLikeFilm(film1.getId());
+            List<Long> whoLikeFilm2 = filmLikeStorage.usersIdsWhoLikeFilm(film2.getId());
             if (whoLikeFilm1.isEmpty() && whoLikeFilm2.isEmpty()) {
                 return Math.toIntExact(film2.getId() - film1.getId());
             } else if (whoLikeFilm1.isEmpty()) {
@@ -177,6 +196,42 @@ public class FilmServiceImpl implements FilmService {
         enrichFilmGenres(films);
         enrichFilmDirectors(films);
         return films;
+    }
+
+    @Override
+    public List<Film> findRecommendations(Long userId) {
+        userService.findUserById(userId);
+        List<FilmLike> userFilmLike = filmLikeStorage.userFilmLike(userId);
+        List<FilmLike> filmLikesUsersWithCommonLike = filmLikeStorage.filmLikesUsersWithCommonLike(userId);
+        // Мапа с id пользователей и количеством совпадений с лайками пользователя
+        Map<Long, Integer> map = new HashMap<>();
+        List<Long> userFilmIds = userFilmLike.stream()
+                .map(FilmLike::getFilmId)
+                .collect(Collectors.toList());
+        filmLikesUsersWithCommonLike.forEach(filmLike -> {
+            if (userFilmIds.contains(filmLike.getFilmId())) {
+                map.merge(filmLike.getUserId(), 1, Integer::sum);
+            }
+        });
+        List<Map.Entry<Long, Integer>> entrySetList = new ArrayList<>(map.entrySet());
+        entrySetList.sort(Map.Entry.<Long, Integer>comparingByValue().reversed());
+        List<FilmLike> userFriendsListWithoutUserFilms = filmLikesUsersWithCommonLike.stream()
+                .filter(filmLike -> !userFilmIds.contains(filmLike.getFilmId()))
+                .collect(Collectors.toList());
+        List<Long> recommendedFilmIds = new ArrayList<>();
+        entrySetList.forEach(entry -> {
+            userFriendsListWithoutUserFilms.stream()
+                    .filter(filmLike -> Objects.equals(filmLike.getUserId(), entry.getKey()))
+                    .forEach(filmLike -> {
+                        if (!recommendedFilmIds.contains(filmLike.getFilmId())) {
+                            recommendedFilmIds.add(filmLike.getFilmId());
+                        }
+                    });
+        });
+        List<Film> filmsByIds = filmStorage.findFilmsByIds(recommendedFilmIds);
+        enrichFilmGenres(filmsByIds);
+        enrichFilmDirectors(filmsByIds);
+        return filmsByIds;
     }
 
 

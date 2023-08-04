@@ -15,9 +15,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
@@ -104,6 +102,25 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             return films.get(0);
         }
+    }
+
+    @Override
+    public List<Film> findFilmsByIds(List<Long> filmsIds) {
+        String sqlQuery = "select f.*, r.name as rating_mpa_name from \"film\" as f " +
+                "left join \"rating_mpa\" as r on f.rating_id = r.rating_id " +
+                "where film_id in (:filmsIds) ";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("filmsIds", filmsIds);
+
+        List<Film> filmList = jdbcOperations.query(sqlQuery, map, new FilmRowMapper());
+
+        Map<Integer, Film> tree = new TreeMap<>();
+        for (Film film : filmList) {
+            tree.put(filmsIds.indexOf(film.getId()), film);
+        }
+        return new ArrayList<>(tree.values());
     }
 
     @Override

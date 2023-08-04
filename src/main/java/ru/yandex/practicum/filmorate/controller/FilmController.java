@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,12 +10,14 @@ import ru.yandex.practicum.filmorate.model.enums.EnumSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.Objects;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@Validated
 public class FilmController {
     FilmService filmService;
 
@@ -56,11 +59,11 @@ public class FilmController {
     }
 
     @GetMapping("director/{directorId}")
-    public List<Film> findFilmsByDirectorId(@PathVariable("directorId") Long directorId,
+    public List<Film> findFilmsByDirectorId(@PathVariable("directorId") @Min(1) Long directorId,
                                             @RequestParam(required = false) EnumSortBy sortBy) {
-        if (directorId <= 0) {
-            throw new IncorrectParameterException("directorId");
-        }
+//        if (directorId <= 0) {
+//            throw new IncorrectParameterException("directorId");
+//        }
         return filmService.findFilmsByDirectorId(directorId, sortBy);
 
     }

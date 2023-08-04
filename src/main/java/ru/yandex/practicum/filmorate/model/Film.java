@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validator.RealiseDateConstraints;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
@@ -16,7 +16,7 @@ import java.util.List;
 public class Film {
     private static final int MAX_LENGTH_DESCRIPTION = 200;
     private Long id;
-    @NotEmpty(message = "name is empty")
+    @NotBlank(message = "name is empty")
     private final String name;
     @Size(max = MAX_LENGTH_DESCRIPTION, message = "description is more than 200 symbols")
     private final String description;

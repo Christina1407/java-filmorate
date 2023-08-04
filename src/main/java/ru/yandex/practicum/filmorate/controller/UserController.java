@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -16,10 +18,12 @@ import java.util.List;
 @Slf4j
 public class UserController {
     UserService userService;
+    FilmService filmService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, FilmService filmService) {
         this.userService = userService;
+        this.filmService = filmService;
     }
 
     @GetMapping()
@@ -56,7 +60,7 @@ public class UserController {
     public void addFriend(@PathVariable("userId") Long userId,
                           @PathVariable("friendId") Long friendId) {
         userService.addFriend(userId, friendId);
-        log.info("Пользователь id = " + userId + " добавил в друзья пользователя id = " + friendId);
+        log.info("Пользователю id = " + userId + " добавился в друзья пользователя id = " + friendId);
     }
 
 
@@ -74,13 +78,18 @@ public class UserController {
 
     @GetMapping("{userId}/recommendations")
     public List<Film> findRecommendations(@PathVariable("userId") Long userId) {
-        return null; //TODO
+        return filmService.findRecommendations(userId);
     }
 
     @GetMapping("{userId}/friends/common/{otherId}")
     public List<User> findMutualFriends(@PathVariable("userId") Long userId,
                                         @PathVariable("otherId") Long otherId) {
         return userService.findMutualFriends(userId, otherId);
+    }
+
+    @GetMapping("{userId}/feed")
+    public List<Feed> getFeed(@PathVariable("userId") Long userId) {
+        return userService.getFeed(userId);
     }
 
 

@@ -6,13 +6,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EnumEventType;
+import ru.yandex.practicum.filmorate.model.enums.EnumOperation;
 import ru.yandex.practicum.filmorate.model.enums.EnumRelationType;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -20,11 +25,13 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
+    private final FeedStorage feedStorage;
 
     @Autowired
-    public UserServiceImpl(@Qualifier("userDbStorage") UserStorage userStorage, FriendshipStorage friendshipStorage) {
+    public UserServiceImpl(@Qualifier("userDbStorage") UserStorage userStorage, FriendshipStorage friendshipStorage, FeedStorage feedStorage) {
         this.userStorage = userStorage;
         this.friendshipStorage = friendshipStorage;
+        this.feedStorage = feedStorage;
     }
 
     @Override
@@ -53,9 +60,23 @@ public class UserServiceImpl implements UserService {
                 //подтверждение дружбы
                 friendshipStorage.updateFriendship(friendId, userId, EnumRelationType.FRIEND);
                 friendshipStorage.addFriendship(userId, friendId, EnumRelationType.FRIEND);
+                feedStorage.save(Feed.builder()
+                        .userId(userId)
+                        .entityId(friendId)
+                        .eventType(EnumEventType.FRIEND)
+                        .operation(EnumOperation.ADD)
+                        .timestamp(Instant.now().toEpochMilli())
+                        .build());
                 //создаем заявку на добавление в друзья
             } else {
                 friendshipStorage.addFriendship(userId, friendId, EnumRelationType.NOT_APPROVED_FRIEND);
+                feedStorage.save(Feed.builder()
+                        .userId(userId)
+                        .entityId(friendId)
+                        .eventType(EnumEventType.FRIEND)
+                        .operation(EnumOperation.ADD)
+                        .timestamp(Instant.now().toEpochMilli())
+                        .build());
             }
         } else {
             log.error("Проверьте айди пользователей");
@@ -72,9 +93,23 @@ public class UserServiceImpl implements UserService {
             if (Objects.nonNull(friendship)) {
                 if (EnumRelationType.FRIEND.equals(friendship.getRelationType())) {
                     friendshipStorage.deleteFriendship(userId, friendId);
+                    feedStorage.save(Feed.builder()
+                            .userId(userId)
+                            .entityId(friendId)
+                            .eventType(EnumEventType.FRIEND)
+                            .operation(EnumOperation.REMOVE)
+                            .timestamp(Instant.now().toEpochMilli())
+                            .build());
                     friendshipStorage.updateFriendship(friendId, userId, EnumRelationType.NOT_APPROVED_FRIEND);
                 } else if (EnumRelationType.NOT_APPROVED_FRIEND.equals(friendship.getRelationType())) {
                     friendshipStorage.deleteFriendship(userId, friendId);
+                    feedStorage.save(Feed.builder()
+                            .userId(userId)
+                            .entityId(friendId)
+                            .eventType(EnumEventType.FRIEND)
+                            .operation(EnumOperation.REMOVE)
+                            .timestamp(Instant.now().toEpochMilli())
+                            .build());
                 } else {
                     log.error("Найден недопустимый тип дружбы");
                     throw new NotFoundException();
@@ -140,4 +175,11 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException();
         }
     }
+
+    @Override
+    public List<Feed> getFeed(Long userId) {
+        findUserById(userId);
+        return feedStorage.findUsersFeed(userId);
+    }
+
 }

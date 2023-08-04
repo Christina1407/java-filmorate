@@ -22,7 +22,7 @@ class FilmLikeDbStorageTest {
     @Test
     void addLike() {
         filmLikeStorage.addLike(1L, 3L);
-        List<Long> whoLikeFilm = filmLikeStorage.whoLikeFilm(3L);
+        List<Long> whoLikeFilm = filmLikeStorage.usersIdsWhoLikeFilm(3L);
         assertThat(whoLikeFilm.size()).isEqualTo(1);
         assertThat(whoLikeFilm.get(0)).isEqualTo(1L);
     }
@@ -30,17 +30,17 @@ class FilmLikeDbStorageTest {
     @Test
     void deleteLike() {
         filmLikeStorage.deleteLike(1L, 1L);
-        List<Long> whoLikeFilm = filmLikeStorage.whoLikeFilm(1L);
+        List<Long> whoLikeFilm = filmLikeStorage.usersIdsWhoLikeFilm(1L);
         assertThat(whoLikeFilm.size()).isEqualTo(1);
         assertThat(whoLikeFilm.get(0)).isEqualTo(2L);
     }
 
     @Test
     void whoLikeFilm() {
-        List<Long> whoLikeFilm = filmLikeStorage.whoLikeFilm(1L);
+        List<Long> whoLikeFilm = filmLikeStorage.usersIdsWhoLikeFilm(1L);
         assertThat(whoLikeFilm.size()).isEqualTo(2);
         assertThat(whoLikeFilm.get(0)).isEqualTo(2L);
-        List<Long> whoLikeFilm3 = filmLikeStorage.whoLikeFilm(3L);
+        List<Long> whoLikeFilm3 = filmLikeStorage.usersIdsWhoLikeFilm(3L);
         assertThat(whoLikeFilm3.size()).isEqualTo(0);
     }
 }
